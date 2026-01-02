@@ -60,6 +60,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
+      devTools: isDev,
       preload: path.join(__dirname, "preload.js"),
     },
   });
@@ -133,9 +134,9 @@ function createWindow() {
       (input.control || input.meta) &&
       input.shift;
 
-    if ((isF12 || isCtrlShiftI) && isDev) {
+    if (isF12 || isCtrlShiftI) {
       event.preventDefault();
-      if (mainWindow && !mainWindow.isDestroyed()) {
+      if (isDev && mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.toggleDevTools();
       }
     }
