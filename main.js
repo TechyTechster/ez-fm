@@ -28,6 +28,9 @@ const sizeOf = require("image-size");
 
 const isPicker = process.argv.includes("--picker");
 
+// Set app name for window manager (WM_CLASS on Linux)
+app.name = "ez-fm";
+
 let mainWindow;
 
 function toFileUrl(p) {
@@ -116,7 +119,7 @@ function createWindow() {
       };
       mainWindow.setTitle(titles[pickerMode] || 'File Picker');
     } else {
-      mainWindow.setTitle('File Manager');
+      mainWindow.setTitle('EZ File Manager');
     }
   });
 
