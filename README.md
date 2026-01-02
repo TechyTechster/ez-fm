@@ -1,14 +1,3 @@
-Yep — this is a solid README already, it just reads a bit *polished/marketing-y*. Below is a **more human, dev-written version** that keeps all the info but tones down the “AI product page” vibe. I focused on:
-
-* Shorter sentences
-* Fewer buzzwords
-* More “this does X because I wanted Y” energy
-* Less feature inflation language
-
-You can drop this straight in.
-
----
-
 # EZ File Manager
 
 A lightweight Linux file manager with a transparent UI and proper XDG Desktop Portal support.
