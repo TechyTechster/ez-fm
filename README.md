@@ -1,94 +1,101 @@
+Yep — this is a solid README already, it just reads a bit *polished/marketing-y*. Below is a **more human, dev-written version** that keeps all the info but tones down the “AI product page” vibe. I focused on:
+
+* Shorter sentences
+* Fewer buzzwords
+* More “this does X because I wanted Y” energy
+* Less feature inflation language
+
+You can drop this straight in.
+
+---
+
 # EZ File Manager
 
-A modern, lightweight file manager for Linux featuring a transparent glassmorphism UI and native XDG Desktop Portal integration.
+A lightweight Linux file manager with a transparent UI and proper XDG Desktop Portal support.
+Built mainly because I wanted a modern-looking file picker that actually behaves how I expect.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Linux-lightgrey.svg)
 ![Electron](https://img.shields.io/badge/electron-28.0.0-47848F.svg)
 
-<!-- Add screenshot here -->
+<!-- Screenshot coming soon -->
+
 <!-- ![Screenshot](screenshots/main.png) -->
 
-## Features
+## What it does
 
-- **Glassmorphism UI** - Transparent, frosted-glass design that blends with your desktop
-- **Multiple View Modes** - Detailed list, compact list, grid, and thumbnail views
-- **Tab Support** - Multi-tab browsing with drag-and-drop between tabs
-- **Smart Sorting** - Sort by name, date modified, date added, size, or type
-- **Grouping** - Group files by type, date, or size with collapsible sections
-- **Per-Folder Settings** - View preferences saved per directory
-- **Quick Access Sidebar** - Pinned folders and tag-based organization
-- **File Tagging** - Color-coded tags for file organization
-- **Preview Panel** - Built-in preview for images, videos, and text files
-- **Archive Support** - Browse inside zip, tar, 7z, and other archives
-- **XDG Portal Integration** - Acts as system file picker for all applications
-- **Keyboard Navigation** - Full keyboard support with familiar shortcuts
-- **Memory Optimized** - Virtual scrolling and lazy loading for large directories
+* Transparent, glass-style UI that blends into the desktop
+* Multiple views: list, compact list, grid, thumbnails
+* Tabs, with drag-and-drop between them
+* Sorting by name, date, size, type, etc.
+* Optional grouping (by type, date, size)
+* Per-folder view settings (saved automatically)
+* Sidebar with pinned folders
+* Simple color-based file tagging
+* Preview panel for images, videos, and text files
+* Browse archives (zip, tar, 7z, etc.)
+* Works as a system file picker via XDG Desktop Portal
+* Full keyboard navigation
+* Handles large folders efficiently using lazy loading
 
 ## Installation
 
-### Prerequisites
+### Requirements
 
 ```bash
 # Arch Linux
 sudo pacman -S nodejs npm electron
 
-# Ubuntu/Debian
+# Ubuntu / Debian
 sudo apt install nodejs npm
 ```
 
-### Quick Start
+### Run locally
 
 ```bash
-# Clone the repository
 git clone https://github.com/TechyTechster/ez-fm.git
 cd ez-fm
 
-# Install dependencies
 npm install
-
-# Run
 npm start
 ```
 
-### System Integration (Optional)
-
-To use EZ File Manager as your system-wide file picker:
+### Optional: system file picker integration
 
 ```bash
 ./install.sh
 ```
 
-This integrates with XDG Desktop Portal so applications like Firefox, Chrome, and other GTK/Qt apps use EZ File Manager for file dialogs.
+After this, apps using XDG Desktop Portal (Firefox, Chromium, GTK/Qt apps, etc.) will use EZ File Manager for file dialogs.
 
 ## Usage
 
-### Keyboard Shortcuts
+### Keyboard shortcuts
 
-| Shortcut | Action |
-|----------|--------|
-| `Ctrl+T` | New tab |
-| `Ctrl+W` | Close tab |
-| `Ctrl+L` | Focus path bar |
-| `Ctrl+F` | Search |
-| `Ctrl+H` | Toggle hidden files |
-| `Ctrl+C` | Copy |
-| `Ctrl+X` | Cut |
-| `Ctrl+V` | Paste |
-| `Delete` | Move to trash |
-| `Shift+Delete` | Permanent delete |
-| `F2` | Rename |
-| `Backspace` | Go up |
-| `Enter` | Open selected |
-| `Ctrl+A` | Select all |
+| Shortcut       | Action                   |
+| -------------- | ------------------------ |
+| `Ctrl+T`       | New tab                  |
+| `Ctrl+W`       | Close tab                |
+| `Ctrl+L`       | Focus path bar           |
+| `Ctrl+F`       | Search                   |
+| `Ctrl+H`       | Show / hide hidden files |
+| `Ctrl+C`       | Copy                     |
+| `Ctrl+X`       | Cut                      |
+| `Ctrl+V`       | Paste                    |
+| `Delete`       | Move to trash            |
+| `Shift+Delete` | Delete permanently       |
+| `F2`           | Rename                   |
+| `Backspace`    | Go up                    |
+| `Enter`        | Open                     |
+| `Ctrl+A`       | Select all               |
 
-### Command Line
+### Command-line options
 
 ```bash
-# Open specific directory
-npm start -- /path/to/directory
+# Open a directory
+npm start -- /path/to/folder
 
-# File picker mode
+# File picker modes
 npm start -- --picker --mode=open
 npm start -- --picker --mode=save --filename=document.txt
 npm start -- --picker --mode=directory
@@ -96,79 +103,78 @@ npm start -- --picker --mode=directory
 
 ## Configuration
 
-View settings are automatically saved per-folder. Global preferences are stored in your browser's localStorage.
+* View settings are saved per folder automatically
+* Global preferences are stored in localStorage
 
-### Hyprland Integration
+No config files needed unless you want to customize window rules.
 
-Add to `~/.config/hypr/hyprland.conf`:
+### Hyprland example
 
 ```conf
-# Float file picker dialogs
 windowrulev2 = float, title:^(Open File|Save File|Select Folder)$
 windowrulev2 = center, title:^(Open File|Save File|Select Folder)$
 windowrulev2 = size 1000 700, title:^(Open File|Save File|Select Folder)$
 ```
 
-## Architecture
+## Project layout
 
 ```
 ez-fm/
 ├── main.js           # Electron main process
-├── renderer.js       # UI logic and file operations
+├── renderer.js       # UI logic
 ├── preload.js        # IPC bridge
-├── portal-service.js # XDG Desktop Portal backend
-├── index.html        # Application markup
-├── styles.css        # UI styling
-└── install.sh        # System integration installer
+├── portal-service.js # XDG portal backend
+├── index.html        # UI markup
+├── styles.css        # Styling
+└── install.sh        # Portal installer
 ```
 
 ## Building
 
 ```bash
-# Development with logging
+# Development mode
 npm run dev
 
-# Build for distribution (requires electron-builder)
+# Build release (electron-builder required)
 npm run build
 ```
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+PRs are welcome.
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. Fork the repo
+2. Create a branch
+3. Commit your changes
+4. Open a pull request
+
+If you’re unsure about something, open an issue first.
 
 ## Troubleshooting
 
-### Portal service issues
+### Portal service problems
 
 ```bash
-# Check service status
 systemctl --user status myfm-portal
-
-# View logs
 journalctl --user -u myfm-portal -f
-
-# Restart portals
 systemctl --user restart xdg-desktop-portal
 ```
 
-### Application not using EZ File Manager as picker
+### App not using EZ File Manager as picker
 
-Some applications cache portal connections. Try:
-1. Restart the application
-2. Restart xdg-desktop-portal: `systemctl --user restart xdg-desktop-portal`
+Some apps cache portal connections.
+
+Try:
+
+1. Restart the app
+2. Restart `xdg-desktop-portal`
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+MIT — see [LICENSE](LICENSE).
 
-## Acknowledgments
+## Notes
 
-- Built with [Electron](https://www.electronjs.org/)
-- Uses [dbus-next](https://github.com/dbusjs/node-dbus-next) for portal integration
-- Inspired by modern macOS Finder aesthetics
+* Built with Electron
+* Uses `dbus-next` for portal integration
+* UI loosely inspired by macOS Finder (without copying its behavior)
