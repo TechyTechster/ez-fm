@@ -5,7 +5,7 @@ Built mainly because I wanted a modern-looking file picker that actually behaves
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Platform](https://img.shields.io/badge/platform-Linux-lightgrey.svg)
-![Electron](https://img.shields.io/badge/electron-28.0.0-47848F.svg)
+![Electron](https://img.shields.io/badge/electron-28.3.3-47848F.svg)
 
 <!-- Screenshot coming soon -->
 
