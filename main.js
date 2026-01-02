@@ -21,6 +21,7 @@ const fsSync = require("fs");
 const sizeOf = require("image-size");
 
 const isPicker = process.argv.includes("--picker");
+let isDev = false;
 
 app.name = "ez-fm";
 
@@ -132,7 +133,7 @@ function createWindow() {
       (input.control || input.meta) &&
       input.shift;
 
-    if (isF12 || isCtrlShiftI) {
+    if ((isF12 || isCtrlShiftI) && isDev) {
       event.preventDefault();
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.toggleDevTools();
@@ -146,20 +147,25 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  isDev = !app.isPackaged || process.env.EZFM_DEVTOOLS === "1";
   createWindow();
 
-  try {
-    globalShortcut.register("F12", () => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.toggleDevTools();
-      }
-    });
-    globalShortcut.register("CommandOrControl+Shift+I", () => {
-      if (mainWindow && !mainWindow.isDestroyed()) {
-        mainWindow.webContents.toggleDevTools();
-      }
-    });
-  } catch {}
+  if (isDev) {
+    const registerDevtoolsShortcut = (accelerator) => {
+      globalShortcut.register(accelerator, () => {
+        if (mainWindow && !mainWindow.isDestroyed()) {
+          mainWindow.webContents.toggleDevTools();
+        }
+      });
+    };
+
+    try {
+      registerDevtoolsShortcut("F12");
+      registerDevtoolsShortcut("CommandOrControl+Shift+I");
+    } catch (error) {
+      console.warn("Failed to register devtools shortcuts:", error);
+    }
+  }
 });
 
 app.on("window-all-closed", () => {
@@ -177,7 +183,9 @@ app.on("activate", () => {
 app.on("will-quit", () => {
   try {
     globalShortcut.unregisterAll();
-  } catch {}
+  } catch (error) {
+    console.warn("Failed to unregister global shortcuts:", error);
+  }
 });
 
 // ============================================================================

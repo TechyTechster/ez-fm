@@ -123,10 +123,10 @@ ez-fm/
 ```bash
 # Development mode
 npm run dev
-
-# Build release (electron-builder required)
-npm run build
 ```
+
+Release builds are not wired yet. If you want packaged builds, add a build
+script and electron-builder or similar tooling.
 
 ## Contributing
 
