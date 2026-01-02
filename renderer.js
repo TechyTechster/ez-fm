@@ -832,6 +832,7 @@ async function init() {
     setupEventListeners();
     setupTabEventListeners();
     setupThumbnailObserver();
+    setupPathBarClick();
 
     // Ensure UI matches persisted hidden-files state on first load
     renderFiles();
@@ -3716,6 +3717,18 @@ function toggleHiddenFiles() {
   if (toggleBtn) toggleBtn.classList.toggle("active", showHidden);
   const pickerToggle = document.getElementById("picker-hidden-toggle");
   if (pickerToggle) pickerToggle.classList.toggle("active", showHidden);
+}
+
+function setupPathBarClick() {
+  const pathBar = document.querySelector(".path-bar");
+  if (!pathBar) return;
+
+  pathBar.addEventListener("click", (e) => {
+    // Only trigger if clicking the path bar itself, not the breadcrumb buttons
+    if (e.target === pathBar || e.target.classList.contains("breadcrumb")) {
+      focusPathBar();
+    }
+  });
 }
 
 function focusPathBar() {

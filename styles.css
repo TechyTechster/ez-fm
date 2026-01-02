@@ -323,6 +323,7 @@ body {
     height: 36px;
     border: 1px solid var(--border-color);
     overflow: hidden;
+    cursor: text;
 }
 
 .breadcrumb {
