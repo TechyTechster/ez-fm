@@ -1,11 +1,9 @@
-/**
- * EZ File Manager - Main Process
- *
- * Electron main process handling window management, IPC communication,
- * and file system operations.
- *
- * @license MIT
- */
+// EZ File Manager — main process
+// MIT License
+
+// ============================================================================
+// Imports & configuration
+// ============================================================================
 
 const {
   app,
@@ -22,27 +20,28 @@ const fs = require("fs").promises;
 const fsSync = require("fs");
 const sizeOf = require("image-size");
 
-// ============================================================================
-// Configuration
-// ============================================================================
-
 const isPicker = process.argv.includes("--picker");
 
-// Set app name for window manager (WM_CLASS on Linux)
 app.name = "ez-fm";
 
 let mainWindow;
 
+// ============================================================================
+// Utilities
+// ============================================================================
+
 function toFileUrl(p) {
-  // Ensure forward slashes and URI-encoding for file:// URLs
   const withSlashes = p.replace(/\\/g, "/");
-  // If it already looks like an absolute *nix path, prefix with file://
-  // On Windows it will look like C:/...
+
   return (
     "file://" +
     encodeURI(withSlashes.startsWith("/") ? withSlashes : "/" + withSlashes)
   );
 }
+
+// ============================================================================
+// Window lifecycle
+// ============================================================================
 
 function createWindow() {
   mainWindow = new BrowserWindow({
@@ -64,70 +63,67 @@ function createWindow() {
     },
   });
 
-  // Parse CLI args for picker mode
   const args = process.argv;
   let pickerMode = "open";
   if (args.includes("--mode=save")) pickerMode = "save";
   if (args.includes("--mode=directory")) pickerMode = "directory";
   const allowMultiple = args.includes("--multiple");
-  
+
   let defaultFilename = "";
-  const filenameArg = args.find(arg => arg.startsWith("--filename="));
+  const filenameArg = args.find((arg) => arg.startsWith("--filename="));
   if (filenameArg) {
     defaultFilename = filenameArg.substring(11);
   }
 
-  // Check command line args for a path to open
   let startPath = null;
-  // Look for the last argument that isn't a flag.
-  // In dev (electron .), we skip '.' if it's the app path.
+
   for (let i = process.argv.length - 1; i >= 1; i--) {
     const arg = process.argv[i];
     if (!arg.startsWith("-")) {
-      if (arg === "." && process.defaultApp) continue; 
+      if (arg === "." && process.defaultApp) continue;
       startPath = arg;
       break;
     }
   }
 
   if (startPath) {
-    // Ensure absolute path
-    if (!path.isAbsolute(startPath)) startPath = path.resolve(process.cwd(), startPath);
-    mainWindow.loadFile("index.html", { query: { 
-      startPath,
-      picker: isPicker ? "true" : "false",
-      pickerMode,
-      allowMultiple: allowMultiple ? "true" : "false",
-      defaultFilename
-    }});
+    if (!path.isAbsolute(startPath))
+      startPath = path.resolve(process.cwd(), startPath);
+    mainWindow.loadFile("index.html", {
+      query: {
+        startPath,
+        picker: isPicker ? "true" : "false",
+        pickerMode,
+        allowMultiple: allowMultiple ? "true" : "false",
+        defaultFilename,
+      },
+    });
   } else {
-    mainWindow.loadFile("index.html", { query: {
-      picker: isPicker ? "true" : "false",
-      pickerMode,
-      allowMultiple: allowMultiple ? "true" : "false",
-      defaultFilename
-    }});
+    mainWindow.loadFile("index.html", {
+      query: {
+        picker: isPicker ? "true" : "false",
+        pickerMode,
+        allowMultiple: allowMultiple ? "true" : "false",
+        defaultFilename,
+      },
+    });
   }
 
-  // Set window title based on mode (after page loads to prevent HTML title override)
-  mainWindow.webContents.on('did-finish-load', () => {
+  mainWindow.webContents.on("did-finish-load", () => {
     if (isPicker) {
       const titles = {
-        'open': 'Open File',
-        'save': 'Save File',
-        'directory': 'Select Folder'
+        open: "Open File",
+        save: "Save File",
+        directory: "Select Folder",
       };
-      mainWindow.setTitle(titles[pickerMode] || 'File Picker');
+      mainWindow.setTitle(titles[pickerMode] || "File Picker");
     } else {
-      mainWindow.setTitle('EZ File Manager');
+      mainWindow.setTitle("EZ File Manager");
     }
   });
 
-  // Remove default menu
   Menu.setApplicationMenu(null);
 
-  // DevTools toggles (useful when no menu/devtools access)
-  // F12 and Ctrl+Shift+I
   mainWindow.webContents.on("before-input-event", (event, input) => {
     const isF12 = input.type === "keyDown" && input.key === "F12";
     const isCtrlShiftI =
@@ -152,7 +148,6 @@ function createWindow() {
 app.whenReady().then(() => {
   createWindow();
 
-  // Global shortcuts as a fallback (in case before-input-event doesn't fire)
   try {
     globalShortcut.register("F12", () => {
       if (mainWindow && !mainWindow.isDestroyed()) {
@@ -164,9 +159,7 @@ app.whenReady().then(() => {
         mainWindow.webContents.toggleDevTools();
       }
     });
-  } catch {
-    // ignore
-  }
+  } catch {}
 });
 
 app.on("window-all-closed", () => {
@@ -184,14 +177,13 @@ app.on("activate", () => {
 app.on("will-quit", () => {
   try {
     globalShortcut.unregisterAll();
-  } catch {
-    // ignore
-  }
+  } catch {}
 });
 
-// IPC Handlers
+// ============================================================================
+// window controls
+// ============================================================================
 
-// Window controls
 ipcMain.on("window-minimize", () => {
   mainWindow?.minimize();
 });
@@ -208,10 +200,9 @@ ipcMain.on("window-close", () => {
   mainWindow?.close();
 });
 
-// Picker controls
 ipcMain.on("picker-confirm", (event, paths) => {
   if (Array.isArray(paths)) {
-    paths.forEach(p => process.stdout.write(p + "\n"));
+    paths.forEach((p) => process.stdout.write(p + "\n"));
   }
   app.exit(0);
 });
@@ -220,7 +211,10 @@ ipcMain.on("picker-cancel", () => {
   app.exit(1);
 });
 
-// Get directory contents
+// ============================================================================
+// filesystem basics
+// ============================================================================
+
 ipcMain.handle("get-directory-contents", async (event, dirPath) => {
   try {
     const items = await fs.readdir(dirPath, { withFileTypes: true });
@@ -235,9 +229,7 @@ ipcMain.handle("get-directory-contents", async (event, dirPath) => {
           if (item.isSymbolicLink()) {
             linkTarget = await fs.readlink(fullPath);
           }
-        } catch (err) {
-          // File might be inaccessible
-        }
+        } catch (err) {}
 
         return {
           name: item.name,
@@ -256,7 +248,6 @@ ipcMain.handle("get-directory-contents", async (event, dirPath) => {
       }),
     );
 
-    // Sort: directories first, then files, both alphabetically
     contents.sort((a, b) => {
       if (a.isDirectory && !b.isDirectory) return -1;
       if (!a.isDirectory && b.isDirectory) return 1;
@@ -265,7 +256,6 @@ ipcMain.handle("get-directory-contents", async (event, dirPath) => {
 
     return { success: true, contents, path: dirPath };
   } catch (error) {
-    // If not a directory or doesn't exist, check if it's an archive path
     if (error.code === "ENOTDIR" || error.code === "ENOENT") {
       return await handleArchiveBrowsing(dirPath);
     }
@@ -273,131 +263,13 @@ ipcMain.handle("get-directory-contents", async (event, dirPath) => {
   }
 });
 
-// Helper to browse archives using 7z
-async function handleArchiveBrowsing(fullPath) {
-  // 1. Find the archive file part of the path
-  let archivePath = fullPath;
-  let internalPath = "";
-  let found = false;
-  
-  // Walk up the path until we find a real file (the archive)
-  let depth = 0;
-  while (depth < 20) { // Safety limit
-    try {
-      const stats = await fs.stat(archivePath);
-      if (stats.isFile()) {
-        found = true;
-        break;
-      } else if (stats.isDirectory()) {
-        return { success: false, error: "Not a directory" };
-      }
-    } catch (e) {
-      // Doesn't exist, move up
-      const parent = path.dirname(archivePath);
-      if (parent === archivePath) break; // Root
-      const base = path.basename(archivePath);
-      internalPath = internalPath ? path.join(base, internalPath) : base;
-      archivePath = parent;
-    }
-    depth++;
-  }
-
-  if (!found) return { success: false, error: "Path not found" };
-
-  // 2. List archive contents using 7z
-  const { exec } = require("child_process");
-  const util = require("util");
-  const execPromise = util.promisify(exec);
-  
-  try {
-    // -slt: technical info, -ba: suppress headers, -sccUTF-8: utf8 output
-    const safeArchivePath = archivePath.replace(/"/g, '\\"');
-    
-    // Check for compressed tarball extensions to handle transparently (skip the intermediate .tar)
-    const isCompressedTar = /\.(tar\.(gz|xz|bz2)|tgz|txz|tbz2)$/i.test(archivePath);
-    
-    let cmd = `7z l -slt -ba -sccUTF-8 "${safeArchivePath}"`;
-    if (isCompressedTar) {
-      // Extract to stdout and list as tar
-      cmd = `7z x -so "${safeArchivePath}" | 7z l -slt -ba -sccUTF-8 -si -ttar`;
-    }
-
-    const { stdout } = await execPromise(cmd, { maxBuffer: 10 * 1024 * 1024 });
-    
-    const contents = [];
-    const seen = new Set();
-    
-    // Normalize internal path to forward slashes for comparison
-    const normalizedInternal = internalPath.replace(/\\/g, '/');
-    
-    // Parse 7z output blocks
-    const blocks = stdout.split(/\r?\n\r?\n/);
-    
-    for (const block of blocks) {
-      const entry = {};
-      block.split(/\r?\n/).forEach(line => {
-        const match = line.match(/^(\w+)\s=\s(.*)$/);
-        if (match) entry[match[1]] = match[2];
-      });
-
-      if (!entry.Path) continue;
-
-      let entryPath = entry.Path.replace(/\\/g, '/');
-      
-      // Filter items inside current internal path
-      if (normalizedInternal && !entryPath.startsWith(normalizedInternal + '/')) continue;
-      
-      // Get relative path
-      let relative = normalizedInternal ? entryPath.slice(normalizedInternal.length + 1) : entryPath;
-      if (!relative) continue; // Current folder itself
-      
-      const parts = relative.split('/');
-      const name = parts[0];
-      
-      if (seen.has(name)) continue;
-      seen.add(name);
-      
-      const isDirectChild = parts.length === 1;
-      const isDir = !isDirectChild || (entry.Attributes && entry.Attributes.includes('D'));
-      
-      contents.push({
-        name: name,
-        path: path.join(fullPath, name),
-        isDirectory: isDir,
-        isFile: !isDir,
-        isSymlink: false,
-        size: isDir ? 0 : parseInt(entry.Size || '0', 10),
-        modified: entry.Modified ? new Date(entry.Modified) : null,
-        created: null,
-        extension: isDir ? null : path.extname(name).toLowerCase()
-      });
-    }
-    
-    contents.sort((a, b) => {
-      if (a.isDirectory && !b.isDirectory) return -1;
-      if (!a.isDirectory && b.isDirectory) return 1;
-      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
-    });
-
-    return { success: true, contents, path: fullPath, isArchive: true };
-  } catch (err) {
-    return { success: false, error: "Failed to read archive (7z required): " + err.message };
-  }
-}
-
-// Get home directory
 ipcMain.handle("get-home-directory", () => {
   return app.getPath("home");
 });
 
-// Get common directories
 ipcMain.handle("get-common-directories", () => {
   const homePath = app.getPath("home");
 
-  // Robust Linux resolution without xdg-user-dir:
-  // - prefer existing directories returned by Electron
-  // - fall back to typical $HOME folder names
-  // - if not found, return homePath (last resort)
   const existingOrNull = (p) => {
     if (!p) return null;
     try {
@@ -422,7 +294,6 @@ ipcMain.handle("get-common-directories", () => {
     return null;
   };
 
-  // Common folder name candidates (including a few frequent variations)
   const desktop =
     getElectronPathOrNull("desktop") ??
     pickHomeSubdir(["Desktop", "desktop", "Schreibtisch", "Bureau"]) ??
@@ -458,10 +329,6 @@ ipcMain.handle("get-common-directories", () => {
     pickHomeSubdir(["Videos", "videos", "Vidéo", "Video"]) ??
     homePath;
 
-  // Best-effort Trash location:
-  // - Linux: follows FreeDesktop spec (~/.local/share/Trash/files) when available
-  // - macOS: ~/.Trash
-  // - Windows: no real filesystem folder (Recycle Bin is virtual); we omit it
   const trash = (() => {
     try {
       if (process.platform === "darwin") {
@@ -498,7 +365,31 @@ ipcMain.handle("get-common-directories", () => {
   };
 });
 
-// Open file with default application
+ipcMain.handle("path-exists", async (event, checkPath) => {
+  try {
+    await fs.access(checkPath);
+    return true;
+  } catch {
+    return false;
+  }
+});
+
+ipcMain.handle("get-parent-directory", (event, currentPath) => {
+  return path.dirname(currentPath);
+});
+
+ipcMain.handle("join-paths", (event, ...paths) => {
+  return path.join(...paths);
+});
+
+ipcMain.handle("parse-path", (event, pathString) => {
+  return path.parse(pathString);
+});
+
+// ============================================================================
+// file operations
+// ============================================================================
+
 ipcMain.handle("open-file", async (event, filePath) => {
   try {
     await shell.openPath(filePath);
@@ -508,32 +399,43 @@ ipcMain.handle("open-file", async (event, filePath) => {
   }
 });
 
-// Show item in folder
 ipcMain.handle("show-in-folder", async (event, filePath) => {
   shell.showItemInFolder(filePath);
   return { success: true };
 });
 
-// Open terminal at path
 ipcMain.handle("open-terminal", async (event, dirPath) => {
   const { spawn } = require("child_process");
   try {
     if (process.platform === "win32") {
-      spawn("cmd.exe", ["/c", "start", "cmd.exe"], { cwd: dirPath, shell: true });
+      spawn("cmd.exe", ["/c", "start", "cmd.exe"], {
+        cwd: dirPath,
+        shell: true,
+      });
     } else if (process.platform === "darwin") {
       spawn("open", ["-a", "Terminal", dirPath]);
     } else {
-      // Linux: try kitty, fallback to x-terminal-emulator, then gnome-terminal
-      const child = spawn("kitty", [], { cwd: dirPath, detached: true, stdio: 'ignore' });
-      child.on('error', (e) => {
-        if (e.code === 'ENOENT') {
-           const child2 = spawn("x-terminal-emulator", [], { cwd: dirPath, detached: true, stdio: 'ignore' });
-           child2.on('error', (e2) => {
-             if (e2.code === 'ENOENT') {
-                spawn("gnome-terminal", [`--working-directory=${dirPath}`], { detached: true, stdio: 'ignore' });
-             }
-           });
-           child2.unref();
+      const child = spawn("kitty", [], {
+        cwd: dirPath,
+        detached: true,
+        stdio: "ignore",
+      });
+      child.on("error", (e) => {
+        if (e.code === "ENOENT") {
+          const child2 = spawn("x-terminal-emulator", [], {
+            cwd: dirPath,
+            detached: true,
+            stdio: "ignore",
+          });
+          child2.on("error", (e2) => {
+            if (e2.code === "ENOENT") {
+              spawn("gnome-terminal", [`--working-directory=${dirPath}`], {
+                detached: true,
+                stdio: "ignore",
+              });
+            }
+          });
+          child2.unref();
         }
       });
       child.unref();
@@ -544,7 +446,6 @@ ipcMain.handle("open-terminal", async (event, dirPath) => {
   }
 });
 
-// Delete file or directory (robust: force + chmod retry)
 ipcMain.handle("delete-item", async (event, itemPath) => {
   try {
     const stats = await fs.stat(itemPath);
@@ -566,7 +467,6 @@ ipcMain.handle("delete-item", async (event, itemPath) => {
 
     return { success: true };
   } catch (error) {
-    // Last-chance attempt: directory delete with force
     try {
       await fs.rm(itemPath, { recursive: true, force: true });
       return { success: true };
@@ -576,24 +476,28 @@ ipcMain.handle("delete-item", async (event, itemPath) => {
   }
 });
 
-// Delete item with sudo (for permission denied scenarios)
 ipcMain.handle("delete-item-sudo", async (event, itemPath, password) => {
   const { exec } = require("child_process");
-  // Basic quote escaping for shell safety
+
   const safePath = itemPath.replace(/"/g, '\\"');
 
   return new Promise((resolve) => {
-    // -S reads password from stdin, -p '' suppresses the prompt, -k ignores cached credentials
-    const child = exec(`sudo -S -k -p '' rm -rf "${safePath}"`, (error, stdout, stderr) => {
-      resolve(error ? { success: false, error: stderr || error.message } : { success: true });
-    });
+    const child = exec(
+      `sudo -S -k -p '' rm -rf "${safePath}"`,
+      (error, stdout, stderr) => {
+        resolve(
+          error
+            ? { success: false, error: stderr || error.message }
+            : { success: true },
+        );
+      },
+    );
 
     child.stdin.write(password + "\n");
     child.stdin.end();
   });
 });
 
-// Move to trash
 ipcMain.handle("trash-item", async (event, itemPath) => {
   try {
     await shell.trashItem(itemPath);
@@ -603,7 +507,6 @@ ipcMain.handle("trash-item", async (event, itemPath) => {
   }
 });
 
-// Rename file or directory
 ipcMain.handle("rename-item", async (event, oldPath, newName) => {
   try {
     const dirName = path.dirname(oldPath);
@@ -615,25 +518,21 @@ ipcMain.handle("rename-item", async (event, oldPath, newName) => {
   }
 });
 
-// Create new folder (safe + handles existing names)
 ipcMain.handle("create-folder", async (event, parentPath, folderName) => {
   try {
     const basePath = path.resolve(parentPath);
     const desiredPath = path.join(basePath, folderName);
 
-    // Create intermediate directories safely
-    // (If it already exists, we'll handle below)
     try {
       await fs.mkdir(desiredPath, { recursive: false });
       return { success: true, path: desiredPath };
     } catch (err) {
-      // If it exists, create a unique name like "New Folder (1)"
       if (err && (err.code === "EEXIST" || err.code === "ENOTEMPTY")) {
         const uniquePath = await findUniquePath(desiredPath, "folder");
         await fs.mkdir(uniquePath, { recursive: false });
         return { success: true, path: uniquePath };
       }
-      // If parent path missing, try creating intermediate dirs for basePath then retry
+
       if (err && err.code === "ENOENT") {
         await fs.mkdir(basePath, { recursive: true });
         try {
@@ -655,16 +554,13 @@ ipcMain.handle("create-folder", async (event, parentPath, folderName) => {
   }
 });
 
-// Create new file (safe + handles existing names)
 ipcMain.handle("create-file", async (event, parentPath, fileName) => {
   try {
     const basePath = path.resolve(parentPath);
     const desiredPath = path.join(basePath, fileName);
 
-    // Ensure parent exists
     await fs.mkdir(basePath, { recursive: true });
 
-    // Try exclusive create; if exists, pick a unique name like "New File (1).txt"
     try {
       const fh = await fs.open(desiredPath, "wx");
       await fh.close();
@@ -683,9 +579,6 @@ ipcMain.handle("create-file", async (event, parentPath, fileName) => {
   }
 });
 
-// Helper: pick a unique sibling path if the desired path already exists.
-// - For folders: "Name (1)", "Name (2)", ...
-// - For files: "Name (1).ext", "Name (2).ext", ...
 async function findUniquePath(desiredPath, kind) {
   const dir = path.dirname(desiredPath);
   const parsed = path.parse(desiredPath);
@@ -698,9 +591,7 @@ async function findUniquePath(desiredPath, kind) {
     const candidatePath = path.join(dir, candidateName);
     try {
       await fs.access(candidatePath);
-      // exists -> keep looping
     } catch {
-      // doesn't exist
       return candidatePath;
     }
   }
@@ -708,7 +599,6 @@ async function findUniquePath(desiredPath, kind) {
   throw new Error("Could not find a unique name");
 }
 
-// Copy file or directory
 ipcMain.handle("copy-item", async (event, sourcePath, destPath) => {
   try {
     const stats = await fs.stat(sourcePath);
@@ -723,7 +613,6 @@ ipcMain.handle("copy-item", async (event, sourcePath, destPath) => {
   }
 });
 
-// Helper function to copy directory recursively
 async function copyDirectory(source, destination) {
   await fs.mkdir(destination, { recursive: true });
   const items = await fs.readdir(source, { withFileTypes: true });
@@ -740,13 +629,11 @@ async function copyDirectory(source, destination) {
   }
 }
 
-// Move file or directory
 ipcMain.handle("move-item", async (event, sourcePath, destPath) => {
   try {
     await fs.rename(sourcePath, destPath);
     return { success: true };
   } catch (error) {
-    // If rename fails (cross-device), try copy and delete
     try {
       const stats = await fs.stat(sourcePath);
       if (stats.isDirectory()) {
@@ -763,106 +650,14 @@ ipcMain.handle("move-item", async (event, sourcePath, destPath) => {
   }
 });
 
-// Extract archive
-ipcMain.handle("extract-archive", async (event, archivePath, destPath) => {
-  try {
-    const { execSync } = require("child_process");
-    const baseName = path.basename(archivePath);
-
-    // Create output directory based on archive name
-    let outputDir = path.join(destPath, baseName.replace(/\.(zip|tar|gz|bz2|xz|7z|rar|tgz)$/gi, "").replace(/\.tar$/i, ""));
-
-    // Use 7z for extraction (works with most formats)
-    // Falls back to unzip for .zip if 7z not available
-    const lower = archivePath.toLowerCase();
-
-    try {
-      await fs.mkdir(outputDir, { recursive: true });
-
-      if (lower.endsWith(".zip")) {
-        // Try unzip first, then 7z
-        try {
-          execSync(`unzip -o "${archivePath}" -d "${outputDir}"`, { stdio: "pipe" });
-        } catch {
-          execSync(`7z x "${archivePath}" -o"${outputDir}" -y`, { stdio: "pipe" });
-        }
-      } else if (lower.endsWith(".tar.gz") || lower.endsWith(".tgz")) {
-        execSync(`tar -xzf "${archivePath}" -C "${outputDir}"`, { stdio: "pipe" });
-      } else if (lower.endsWith(".tar.bz2")) {
-        execSync(`tar -xjf "${archivePath}" -C "${outputDir}"`, { stdio: "pipe" });
-      } else if (lower.endsWith(".tar.xz")) {
-        execSync(`tar -xJf "${archivePath}" -C "${outputDir}"`, { stdio: "pipe" });
-      } else if (lower.endsWith(".tar")) {
-        execSync(`tar -xf "${archivePath}" -C "${outputDir}"`, { stdio: "pipe" });
-      } else if (lower.endsWith(".gz")) {
-        execSync(`gunzip -c "${archivePath}" > "${path.join(outputDir, baseName.replace(/\.gz$/i, ""))}"`, { stdio: "pipe", shell: true });
-      } else {
-        // 7z handles most other formats (rar, 7z, etc.)
-        execSync(`7z x "${archivePath}" -o"${outputDir}" -y`, { stdio: "pipe" });
-      }
-
-      return { success: true, outputDir };
-    } catch (cmdError) {
-      return { success: false, error: cmdError.message || "Extraction failed" };
-    }
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-});
-
-// Compress items to archive
-ipcMain.handle("compress-items", async (event, paths, outputPath) => {
-  try {
-    const { execSync } = require("child_process");
-    const lower = outputPath.toLowerCase();
-
-    // Build list of items to compress
-    const items = paths.map(p => `"${p}"`).join(" ");
-
-    try {
-      if (lower.endsWith(".zip")) {
-        // Use zip command
-        const baseNames = paths.map(p => path.basename(p)).join(" ");
-        const parentDir = path.dirname(paths[0]);
-        execSync(`cd "${parentDir}" && zip -r "${outputPath}" ${paths.map(p => `"${path.basename(p)}"`).join(" ")}`, { stdio: "pipe", shell: true });
-      } else if (lower.endsWith(".tar.gz") || lower.endsWith(".tgz")) {
-        execSync(`tar -czf "${outputPath}" -C "${path.dirname(paths[0])}" ${paths.map(p => `"${path.basename(p)}"`).join(" ")}`, { stdio: "pipe", shell: true });
-      } else if (lower.endsWith(".tar.bz2")) {
-        execSync(`tar -cjf "${outputPath}" -C "${path.dirname(paths[0])}" ${paths.map(p => `"${path.basename(p)}"`).join(" ")}`, { stdio: "pipe", shell: true });
-      } else if (lower.endsWith(".tar.xz")) {
-        execSync(`tar -cJf "${outputPath}" -C "${path.dirname(paths[0])}" ${paths.map(p => `"${path.basename(p)}"`).join(" ")}`, { stdio: "pipe", shell: true });
-      } else if (lower.endsWith(".tar")) {
-        execSync(`tar -cf "${outputPath}" -C "${path.dirname(paths[0])}" ${paths.map(p => `"${path.basename(p)}"`).join(" ")}`, { stdio: "pipe", shell: true });
-      } else if (lower.endsWith(".7z")) {
-        execSync(`7z a "${outputPath}" ${items}`, { stdio: "pipe", shell: true });
-      } else {
-        // Default to zip
-        execSync(`cd "${path.dirname(paths[0])}" && zip -r "${outputPath}" ${paths.map(p => `"${path.basename(p)}"`).join(" ")}`, { stdio: "pipe", shell: true });
-      }
-
-      return { success: true };
-    } catch (cmdError) {
-      return { success: false, error: cmdError.message || "Compression failed" };
-    }
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-});
-
-// Batch file operation (copy/move) with progress reporting
 ipcMain.handle("batch-file-operation", async (event, items, operation) => {
-  // items: [{ source, dest }]
-  // operation: 'copy' | 'move'
-  
   let totalBytes = 0;
   let processedBytes = 0;
   let totalFiles = 0;
   let processedFiles = 0;
 
-  // Map of source path -> size (bytes) to track progress for atomic moves
   const itemSizes = new Map();
 
-  // Helper to scan directory for totals
   const scan = async (p, rootItemPath) => {
     try {
       const stats = await fs.stat(p);
@@ -872,17 +667,18 @@ ipcMain.handle("batch-file-operation", async (event, items, operation) => {
       } else {
         totalBytes += stats.size;
         totalFiles++;
-        itemSizes.set(rootItemPath, (itemSizes.get(rootItemPath) || 0) + stats.size);
+        itemSizes.set(
+          rootItemPath,
+          (itemSizes.get(rootItemPath) || 0) + stats.size,
+        );
       }
     } catch {}
   };
 
-  // 1. Scan phase
   for (const item of items) {
     await scan(item.source, item.source);
   }
 
-  // Avoid division by zero
   if (totalBytes === 0) totalBytes = 1;
 
   const reportProgress = () => {
@@ -890,7 +686,6 @@ ipcMain.handle("batch-file-operation", async (event, items, operation) => {
     event.sender.send("file-operation-progress", percent);
   };
 
-  // Helper to copy with progress
   const copyRecursive = async (src, dest) => {
     const stats = await fs.stat(src);
     if (stats.isDirectory()) {
@@ -907,21 +702,18 @@ ipcMain.handle("batch-file-operation", async (event, items, operation) => {
     }
   };
 
-  // 2. Execution phase
   try {
     for (const item of items) {
       if (operation === "copy") {
         await copyRecursive(item.source, item.dest);
       } else {
-        // Move: try rename first
         try {
           await fs.rename(item.source, item.dest);
-          // Rename is instant, add the pre-calculated size of this item tree to progress
+
           const size = itemSizes.get(item.source) || 0;
           processedBytes += size;
           reportProgress();
         } catch (err) {
-          // Cross-device move: copy then delete
           await copyRecursive(item.source, item.dest);
           await fs.rm(item.source, { recursive: true, force: true });
         }
@@ -933,13 +725,11 @@ ipcMain.handle("batch-file-operation", async (event, items, operation) => {
   }
 });
 
-// Get file/folder info
 ipcMain.handle("get-item-info", async (event, itemPath) => {
   try {
     const stats = await fs.stat(itemPath);
     let size = stats.size;
 
-    // Calculate directory size
     if (stats.isDirectory()) {
       size = await getDirectorySize(itemPath);
     }
@@ -963,7 +753,6 @@ ipcMain.handle("get-item-info", async (event, itemPath) => {
   }
 });
 
-// Helper function to get directory size (recursive)
 async function getDirectorySize(dirPath) {
   let size = 0;
   try {
@@ -977,20 +766,275 @@ async function getDirectorySize(dirPath) {
           const stats = await fs.stat(fullPath);
           size += stats.size;
         }
-      } catch (err) {
-        // Skip inaccessible items
-      }
+      } catch (err) {}
     }
-  } catch (err) {
-    // Skip inaccessible directories
-  }
+  } catch (err) {}
   return size;
 }
 
-// Helper to get disk space (robust: fs.statfs -> wmic/df fallback)
+ipcMain.handle("clipboard-copy-paths", async (event, paths) => {
+  try {
+    const list = Array.isArray(paths) ? paths.filter(Boolean) : [];
+    if (list.length === 0)
+      return { success: false, error: "No paths provided" };
+
+    clipboard.writeText(list.join("\n"));
+
+    try {
+      clipboard.write({
+        text: list.join("\n"),
+
+        "text/uri-list": list.map(toFileUrl).join("\n"),
+      });
+    } catch {}
+
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// ============================================================================
+// archives
+// ============================================================================
+
+async function handleArchiveBrowsing(fullPath) {
+  let archivePath = fullPath;
+  let internalPath = "";
+  let found = false;
+
+  let depth = 0;
+  while (depth < 20) {
+    try {
+      const stats = await fs.stat(archivePath);
+      if (stats.isFile()) {
+        found = true;
+        break;
+      } else if (stats.isDirectory()) {
+        return { success: false, error: "Not a directory" };
+      }
+    } catch (e) {
+      const parent = path.dirname(archivePath);
+      if (parent === archivePath) break;
+      const base = path.basename(archivePath);
+      internalPath = internalPath ? path.join(base, internalPath) : base;
+      archivePath = parent;
+    }
+    depth++;
+  }
+
+  if (!found) return { success: false, error: "Path not found" };
+
+  const { exec } = require("child_process");
+  const util = require("util");
+  const execPromise = util.promisify(exec);
+
+  try {
+    const safeArchivePath = archivePath.replace(/"/g, '\\"');
+
+    const isCompressedTar = /\.(tar\.(gz|xz|bz2)|tgz|txz|tbz2)$/i.test(
+      archivePath,
+    );
+
+    let cmd = `7z l -slt -ba -sccUTF-8 "${safeArchivePath}"`;
+    if (isCompressedTar) {
+      cmd = `7z x -so "${safeArchivePath}" | 7z l -slt -ba -sccUTF-8 -si -ttar`;
+    }
+
+    const { stdout } = await execPromise(cmd, { maxBuffer: 10 * 1024 * 1024 });
+
+    const contents = [];
+    const seen = new Set();
+
+    const normalizedInternal = internalPath.replace(/\\/g, "/");
+
+    const blocks = stdout.split(/\r?\n\r?\n/);
+
+    for (const block of blocks) {
+      const entry = {};
+      block.split(/\r?\n/).forEach((line) => {
+        const match = line.match(/^(\w+)\s=\s(.*)$/);
+        if (match) entry[match[1]] = match[2];
+      });
+
+      if (!entry.Path) continue;
+
+      let entryPath = entry.Path.replace(/\\/g, "/");
+
+      if (normalizedInternal && !entryPath.startsWith(normalizedInternal + "/"))
+        continue;
+
+      let relative = normalizedInternal
+        ? entryPath.slice(normalizedInternal.length + 1)
+        : entryPath;
+      if (!relative) continue;
+
+      const parts = relative.split("/");
+      const name = parts[0];
+
+      if (seen.has(name)) continue;
+      seen.add(name);
+
+      const isDirectChild = parts.length === 1;
+      const isDir =
+        !isDirectChild || (entry.Attributes && entry.Attributes.includes("D"));
+
+      contents.push({
+        name: name,
+        path: path.join(fullPath, name),
+        isDirectory: isDir,
+        isFile: !isDir,
+        isSymlink: false,
+        size: isDir ? 0 : parseInt(entry.Size || "0", 10),
+        modified: entry.Modified ? new Date(entry.Modified) : null,
+        created: null,
+        extension: isDir ? null : path.extname(name).toLowerCase(),
+      });
+    }
+
+    contents.sort((a, b) => {
+      if (a.isDirectory && !b.isDirectory) return -1;
+      if (!a.isDirectory && b.isDirectory) return 1;
+      return a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+    });
+
+    return { success: true, contents, path: fullPath, isArchive: true };
+  } catch (err) {
+    return {
+      success: false,
+      error: "Failed to read archive (7z required): " + err.message,
+    };
+  }
+}
+
+ipcMain.handle("extract-archive", async (event, archivePath, destPath) => {
+  try {
+    const { execSync } = require("child_process");
+    const baseName = path.basename(archivePath);
+
+    let outputDir = path.join(
+      destPath,
+      baseName
+        .replace(/\.(zip|tar|gz|bz2|xz|7z|rar|tgz)$/gi, "")
+        .replace(/\.tar$/i, ""),
+    );
+
+    const lower = archivePath.toLowerCase();
+
+    try {
+      await fs.mkdir(outputDir, { recursive: true });
+
+      if (lower.endsWith(".zip")) {
+        try {
+          execSync(`unzip -o "${archivePath}" -d "${outputDir}"`, {
+            stdio: "pipe",
+          });
+        } catch {
+          execSync(`7z x "${archivePath}" -o"${outputDir}" -y`, {
+            stdio: "pipe",
+          });
+        }
+      } else if (lower.endsWith(".tar.gz") || lower.endsWith(".tgz")) {
+        execSync(`tar -xzf "${archivePath}" -C "${outputDir}"`, {
+          stdio: "pipe",
+        });
+      } else if (lower.endsWith(".tar.bz2")) {
+        execSync(`tar -xjf "${archivePath}" -C "${outputDir}"`, {
+          stdio: "pipe",
+        });
+      } else if (lower.endsWith(".tar.xz")) {
+        execSync(`tar -xJf "${archivePath}" -C "${outputDir}"`, {
+          stdio: "pipe",
+        });
+      } else if (lower.endsWith(".tar")) {
+        execSync(`tar -xf "${archivePath}" -C "${outputDir}"`, {
+          stdio: "pipe",
+        });
+      } else if (lower.endsWith(".gz")) {
+        execSync(
+          `gunzip -c "${archivePath}" > "${path.join(outputDir, baseName.replace(/\.gz$/i, ""))}"`,
+          { stdio: "pipe", shell: true },
+        );
+      } else {
+        execSync(`7z x "${archivePath}" -o"${outputDir}" -y`, {
+          stdio: "pipe",
+        });
+      }
+
+      return { success: true, outputDir };
+    } catch (cmdError) {
+      return { success: false, error: cmdError.message || "Extraction failed" };
+    }
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+ipcMain.handle("compress-items", async (event, paths, outputPath) => {
+  try {
+    const { execSync } = require("child_process");
+    const lower = outputPath.toLowerCase();
+
+    const items = paths.map((p) => `"${p}"`).join(" ");
+
+    try {
+      if (lower.endsWith(".zip")) {
+        const baseNames = paths.map((p) => path.basename(p)).join(" ");
+        const parentDir = path.dirname(paths[0]);
+        execSync(
+          `cd "${parentDir}" && zip -r "${outputPath}" ${paths.map((p) => `"${path.basename(p)}"`).join(" ")}`,
+          { stdio: "pipe", shell: true },
+        );
+      } else if (lower.endsWith(".tar.gz") || lower.endsWith(".tgz")) {
+        execSync(
+          `tar -czf "${outputPath}" -C "${path.dirname(paths[0])}" ${paths.map((p) => `"${path.basename(p)}"`).join(" ")}`,
+          { stdio: "pipe", shell: true },
+        );
+      } else if (lower.endsWith(".tar.bz2")) {
+        execSync(
+          `tar -cjf "${outputPath}" -C "${path.dirname(paths[0])}" ${paths.map((p) => `"${path.basename(p)}"`).join(" ")}`,
+          { stdio: "pipe", shell: true },
+        );
+      } else if (lower.endsWith(".tar.xz")) {
+        execSync(
+          `tar -cJf "${outputPath}" -C "${path.dirname(paths[0])}" ${paths.map((p) => `"${path.basename(p)}"`).join(" ")}`,
+          { stdio: "pipe", shell: true },
+        );
+      } else if (lower.endsWith(".tar")) {
+        execSync(
+          `tar -cf "${outputPath}" -C "${path.dirname(paths[0])}" ${paths.map((p) => `"${path.basename(p)}"`).join(" ")}`,
+          { stdio: "pipe", shell: true },
+        );
+      } else if (lower.endsWith(".7z")) {
+        execSync(`7z a "${outputPath}" ${items}`, {
+          stdio: "pipe",
+          shell: true,
+        });
+      } else {
+        execSync(
+          `cd "${path.dirname(paths[0])}" && zip -r "${outputPath}" ${paths.map((p) => `"${path.basename(p)}"`).join(" ")}`,
+          { stdio: "pipe", shell: true },
+        );
+      }
+
+      return { success: true };
+    } catch (cmdError) {
+      return {
+        success: false,
+        error: cmdError.message || "Compression failed",
+      };
+    }
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+});
+
+// ============================================================================
+// devices & mounts
+// ============================================================================
+
 async function getDiskSpace(pathStr) {
   try {
-    // Node 18.15+ / Electron 25+
     if (fs.statfs) {
       const stats = await fs.statfs(pathStr);
       return {
@@ -1000,7 +1044,6 @@ async function getDiskSpace(pathStr) {
     }
   } catch {}
 
-  // Fallback
   const { exec } = require("child_process");
   const util = require("util");
   const execPromise = util.promisify(exec);
@@ -1008,19 +1051,27 @@ async function getDiskSpace(pathStr) {
   try {
     if (process.platform === "win32") {
       const driveLetter = pathStr.substring(0, 2);
-      const { stdout } = await execPromise(`wmic logicaldisk where "DeviceID='${driveLetter}'" get FreeSpace,Size /format:value`);
+      const { stdout } = await execPromise(
+        `wmic logicaldisk where "DeviceID='${driveLetter}'" get FreeSpace,Size /format:value`,
+      );
       const sizeMatch = stdout.match(/Size=(\d+)/);
       const freeMatch = stdout.match(/FreeSpace=(\d+)/);
       if (sizeMatch && freeMatch) {
-        return { total: parseInt(sizeMatch[1], 10), free: parseInt(freeMatch[1], 10) };
+        return {
+          total: parseInt(sizeMatch[1], 10),
+          free: parseInt(freeMatch[1], 10),
+        };
       }
     } else {
       const { stdout } = await execPromise(`df -kP "${pathStr}"`);
-      const lines = stdout.trim().split('\n');
+      const lines = stdout.trim().split("\n");
       if (lines.length >= 2) {
         const parts = lines[1].split(/\s+/);
         if (parts.length >= 4) {
-          return { total: parseInt(parts[1], 10) * 1024, free: parseInt(parts[3], 10) * 1024 };
+          return {
+            total: parseInt(parts[1], 10) * 1024,
+            free: parseInt(parts[3], 10) * 1024,
+          };
         }
       }
     }
@@ -1028,22 +1079,8 @@ async function getDiskSpace(pathStr) {
   return null;
 }
 
-// Show open dialog
-ipcMain.handle("show-open-dialog", async (event, options) => {
-  const result = await dialog.showOpenDialog(mainWindow, options);
-  return result;
-});
-
-// Show save dialog
-ipcMain.handle("show-save-dialog", async (event, options) => {
-  const result = await dialog.showSaveDialog(mainWindow, options);
-  return result;
-});
-
-// Get drives (for Windows) or block devices (Linux/macOS)
 ipcMain.handle("get-drives", async () => {
   if (process.platform === "win32") {
-    // Windows: get drive letters
     const drives = [];
     for (let i = 65; i <= 90; i++) {
       const drive = String.fromCharCode(i) + ":\\";
@@ -1051,13 +1088,10 @@ ipcMain.handle("get-drives", async () => {
         await fs.access(drive);
         const space = await getDiskSpace(drive);
         drives.push({ name: drive, path: drive, mounted: true, space });
-      } catch (err) {
-        // Drive doesn't exist
-      }
+      } catch (err) {}
     }
     return drives;
   } else {
-    // Linux/macOS: use lsblk to get all block devices
     const { exec } = require("child_process");
     const util = require("util");
     const execPromise = util.promisify(exec);
@@ -1065,9 +1099,8 @@ ipcMain.handle("get-drives", async () => {
     const drives = [];
 
     try {
-      // Get block devices with lsblk (JSON output) - include RO for read-only check
       const { stdout } = await execPromise(
-        "lsblk -J -o NAME,SIZE,TYPE,MOUNTPOINT,LABEL,FSTYPE,RO 2>/dev/null"
+        "lsblk -J -o NAME,SIZE,TYPE,MOUNTPOINT,LABEL,FSTYPE,RO 2>/dev/null",
       );
       const data = JSON.parse(stdout);
 
@@ -1081,20 +1114,24 @@ ipcMain.handle("get-drives", async () => {
         const type = device.type;
         const ro = device.ro === "1" || device.ro === true;
 
-        // Skip loop devices, ram disks, rom devices, and system partitions
         if (type === "loop" || type === "ram" || type === "rom") return;
 
-        // Skip system/boot partitions and swap
-        const skipFsTypes = ["swap", "vfat"]; // vfat at /boot/efi
+        const skipFsTypes = ["swap", "vfat"];
         const skipMountpoints = ["/boot", "/boot/efi", "/efi", "[SWAP]"];
         const skipLabels = ["EFI", "SYSTEM", "Recovery", "RECOVERY", "BIOS"];
 
-        if (fstype && skipFsTypes.includes(fstype) &&
-            (mountpoint === "[SWAP]" || !mountpoint || skipMountpoints.some(m => mountpoint?.startsWith(m)))) return;
-        if (mountpoint && skipMountpoints.some(m => mountpoint.startsWith(m))) return;
+        if (
+          fstype &&
+          skipFsTypes.includes(fstype) &&
+          (mountpoint === "[SWAP]" ||
+            !mountpoint ||
+            skipMountpoints.some((m) => mountpoint?.startsWith(m)))
+        )
+          return;
+        if (mountpoint && skipMountpoints.some((m) => mountpoint.startsWith(m)))
+          return;
         if (label && skipLabels.includes(label)) return;
 
-        // For partitions and disks with filesystems
         if (fstype || mountpoint) {
           let displayName = label || name;
           if (size) displayName += ` (${size})`;
@@ -1110,7 +1147,6 @@ ipcMain.handle("get-drives", async () => {
           });
         }
 
-        // Process children (partitions)
         if (device.children) {
           for (const child of device.children) {
             processDevice(child, name);
@@ -1124,16 +1160,13 @@ ipcMain.handle("get-drives", async () => {
         }
       }
     } catch (err) {
-      // lsblk failed, fall back to basic method
       console.error("lsblk failed, using fallback:", err.message);
     }
 
-    // Always include root
     if (!drives.some((d) => d.path === "/")) {
       drives.unshift({ name: "Root", path: "/", mounted: true });
     }
 
-    // Add common mount point directories as fallback
     const commonMounts = ["/mnt", "/media", "/Volumes", "/run/media"];
     for (const mount of commonMounts) {
       try {
@@ -1142,10 +1175,12 @@ ipcMain.handle("get-drives", async () => {
         for (const item of items) {
           if (item.isDirectory()) {
             const itemPath = path.join(mount, item.name);
-            // Check subdirectories for /run/media/$USER/
+
             if (mount === "/run/media") {
               try {
-                const subItems = await fs.readdir(itemPath, { withFileTypes: true });
+                const subItems = await fs.readdir(itemPath, {
+                  withFileTypes: true,
+                });
                 for (const subItem of subItems) {
                   if (subItem.isDirectory()) {
                     const subPath = path.join(itemPath, subItem.name);
@@ -1158,9 +1193,7 @@ ipcMain.handle("get-drives", async () => {
                     }
                   }
                 }
-              } catch (e) {
-                // Skip inaccessible
-              }
+              } catch (e) {}
             } else if (!drives.some((d) => d.path === itemPath)) {
               drives.push({
                 name: item.name,
@@ -1170,12 +1203,9 @@ ipcMain.handle("get-drives", async () => {
             }
           }
         }
-      } catch (err) {
-        // Mount point doesn't exist
-      }
+      } catch (err) {}
     }
 
-    // Populate space info for mounted drives
     for (const d of drives) {
       if (d.mounted && d.path) {
         d.space = await getDiskSpace(d.path);
@@ -1186,7 +1216,6 @@ ipcMain.handle("get-drives", async () => {
   }
 });
 
-// Unmount a device using udisksctl
 ipcMain.handle("unmount-device", async (event, devicePath) => {
   const { exec } = require("child_process");
   const util = require("util");
@@ -1196,12 +1225,10 @@ ipcMain.handle("unmount-device", async (event, devicePath) => {
     await execPromise(`udisksctl unmount -b ${devicePath} 2>&1`);
     return { success: true };
   } catch (error) {
-    // Try alternative: gio mount -u
     try {
       await execPromise(`gio mount -u ${devicePath} 2>&1`);
       return { success: true };
     } catch (gioErr) {
-      // Try umount as last resort
       try {
         await execPromise(`umount ${devicePath} 2>&1`);
         return { success: true };
@@ -1212,112 +1239,102 @@ ipcMain.handle("unmount-device", async (event, devicePath) => {
   }
 });
 
-// Mount a device using udisksctl
 ipcMain.handle("mount-device", async (event, devicePath) => {
   const { exec } = require("child_process");
   const util = require("util");
   const execPromise = util.promisify(exec);
 
   try {
-    // Use udisksctl to mount (works without root on most Linux distros)
-    const { stdout } = await execPromise(`udisksctl mount -b ${devicePath} 2>&1`);
-    // Parse mount point from output like "Mounted /dev/sdb1 at /run/media/user/LABEL"
+    const { stdout } = await execPromise(
+      `udisksctl mount -b ${devicePath} 2>&1`,
+    );
+
     const match = stdout.match(/at (.+?)\.?\s*$/);
     const mountpoint = match ? match[1].trim() : null;
     return { success: true, mountpoint };
   } catch (error) {
-    // Try alternative: gio mount
     try {
       await execPromise(`gio mount -d ${devicePath} 2>&1`);
-      // Get mount point from lsblk
+
       const { stdout: lsblkOut } = await execPromise(
-        `lsblk -n -o MOUNTPOINT ${devicePath} 2>/dev/null`
+        `lsblk -n -o MOUNTPOINT ${devicePath} 2>/dev/null`,
       );
       const mountpoint = lsblkOut.trim() || null;
       if (mountpoint) {
         return { success: true, mountpoint };
       }
-    } catch (gioErr) {
-      // gio also failed
-    }
+    } catch (gioErr) {}
     return { success: false, error: error.message || "Mount failed" };
   }
 });
 
-// Check if path exists
-ipcMain.handle("path-exists", async (event, checkPath) => {
-  try {
-    await fs.access(checkPath);
-    return true;
-  } catch {
-    return false;
-  }
+// ============================================================================
+// dialogs
+// ============================================================================
+
+ipcMain.handle("show-open-dialog", async (event, options) => {
+  const result = await dialog.showOpenDialog(mainWindow, options);
+  return result;
 });
 
-// Get parent directory
-ipcMain.handle("get-parent-directory", (event, currentPath) => {
-  return path.dirname(currentPath);
+ipcMain.handle("show-save-dialog", async (event, options) => {
+  const result = await dialog.showSaveDialog(mainWindow, options);
+  return result;
 });
 
-// Join paths
-ipcMain.handle("join-paths", (event, ...paths) => {
-  return path.join(...paths);
-});
+// ============================================================================
+// metadata & preview
+// ============================================================================
 
-// Parse path
-ipcMain.handle("parse-path", (event, pathString) => {
-  return path.parse(pathString);
-});
-
-// Copy file paths to OS clipboard (as text and as file list where supported)
-ipcMain.handle("clipboard-copy-paths", async (event, paths) => {
-  try {
-    const list = Array.isArray(paths) ? paths.filter(Boolean) : [];
-    if (list.length === 0)
-      return { success: false, error: "No paths provided" };
-
-    // Always write plain text (newline-separated)
-    clipboard.writeText(list.join("\n"));
-
-    // Also try to write a file list for apps that support it (best-effort)
-    try {
-      clipboard.write({
-        text: list.join("\n"),
-        // Many apps accept a text/uri-list for file drops
-        "text/uri-list": list.map(toFileUrl).join("\n"),
-      });
-    } catch {
-      // ignore format failures; text is already written
-    }
-
-    return { success: true };
-  } catch (error) {
-    return { success: false, error: error.message };
-  }
-});
-
-// Read file contents for preview (text files only, with size limit)
 ipcMain.handle("read-file-preview", async (event, filePath) => {
   try {
     const stats = await fs.stat(filePath);
-    
-    // Only read text files, and limit to 1MB for preview
-    const MAX_PREVIEW_SIZE = 1024 * 1024; // 1MB
+
+    const MAX_PREVIEW_SIZE = 1024 * 1024;
     if (stats.size > MAX_PREVIEW_SIZE) {
       return { success: false, error: "File too large for preview" };
     }
 
-    // Check if it's likely a text file by extension
     const ext = path.extname(filePath).toLowerCase();
     const textExtensions = [
-      ".txt", ".md", ".json", ".xml", ".html", ".css", ".js", ".ts",
-      ".py", ".java", ".c", ".cpp", ".h", ".hpp", ".rs", ".go", ".rb",
-      ".php", ".sh", ".bat", ".yml", ".yaml", ".ini", ".conf", ".log",
-      ".csv", ".tsv", ".sql", ".rtf", ".tex", ".latex"
+      ".txt",
+      ".md",
+      ".json",
+      ".xml",
+      ".html",
+      ".css",
+      ".js",
+      ".ts",
+      ".py",
+      ".java",
+      ".c",
+      ".cpp",
+      ".h",
+      ".hpp",
+      ".rs",
+      ".go",
+      ".rb",
+      ".php",
+      ".sh",
+      ".bat",
+      ".yml",
+      ".yaml",
+      ".ini",
+      ".conf",
+      ".log",
+      ".csv",
+      ".tsv",
+      ".sql",
+      ".rtf",
+      ".tex",
+      ".latex",
     ];
 
     if (!textExtensions.includes(ext)) {
-      return { success: false, error: "File type not supported for text preview" };
+      return {
+        success: false,
+        error: "File type not supported for text preview",
+      };
     }
 
     const content = await fs.readFile(filePath, "utf8");
@@ -1327,7 +1344,6 @@ ipcMain.handle("read-file-preview", async (event, filePath) => {
   }
 });
 
-// Get image metadata (dimensions, format, etc.)
 ipcMain.handle("get-image-metadata", async (event, filePath) => {
   try {
     const stats = await fs.stat(filePath);
@@ -1335,10 +1351,8 @@ ipcMain.handle("get-image-metadata", async (event, filePath) => {
 
     try {
       dimensions = sizeOf(filePath);
-    } catch (e) {
-      // image-size failed, but we still return basic stats
-    }
-    
+    } catch (e) {}
+
     return {
       success: true,
       metadata: {
@@ -1355,7 +1369,6 @@ ipcMain.handle("get-image-metadata", async (event, filePath) => {
   }
 });
 
-// Get video metadata (duration, resolution, codec, etc.)
 ipcMain.handle("get-video-metadata", async (event, filePath) => {
   try {
     const stats = await fs.stat(filePath);
@@ -1363,13 +1376,12 @@ ipcMain.handle("get-video-metadata", async (event, filePath) => {
     const util = require("util");
     const execPromise = util.promisify(exec);
 
-    // Try to use ffprobe if available (common on Linux)
     try {
       const { stdout } = await execPromise(
-        `ffprobe -v quiet -print_format json -show_format -show_streams "${filePath}" 2>/dev/null`
+        `ffprobe -v quiet -print_format json -show_format -show_streams "${filePath}" 2>/dev/null`,
       );
       const data = JSON.parse(stdout);
-      
+
       const videoStream = data.streams?.find((s) => s.codec_type === "video");
       const audioStream = data.streams?.find((s) => s.codec_type === "audio");
       const format = data.format;
@@ -1383,20 +1395,21 @@ ipcMain.handle("get-video-metadata", async (event, filePath) => {
           videoCodec: videoStream?.codec_name || null,
           videoWidth: videoStream?.width || null,
           videoHeight: videoStream?.height || null,
-          videoFps: videoStream?.r_frame_rate ? (() => {
-            const parts = videoStream.r_frame_rate.split("/");
-            if (parts.length === 2) {
-              return parseFloat(parts[0]) / parseFloat(parts[1]);
-            }
-            return parseFloat(videoStream.r_frame_rate);
-          })() : null,
+          videoFps: videoStream?.r_frame_rate
+            ? (() => {
+                const parts = videoStream.r_frame_rate.split("/");
+                if (parts.length === 2) {
+                  return parseFloat(parts[0]) / parseFloat(parts[1]);
+                }
+                return parseFloat(videoStream.r_frame_rate);
+              })()
+            : null,
           audioCodec: audioStream?.codec_name || null,
           audioChannels: audioStream?.channels || null,
           audioSampleRate: audioStream?.sample_rate || null,
         },
       };
     } catch (ffprobeError) {
-      // ffprobe not available or failed, return basic info
       return {
         success: true,
         metadata: {

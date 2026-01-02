@@ -11,28 +11,34 @@
         <link rel="stylesheet" href="styles.css" />
         <script>
             // Detect picker mode early to prevent UI flash
-            (function() {
+            (function () {
                 var params = new URLSearchParams(window.location.search);
-                if (params.get('picker') === 'true') {
-                    document.documentElement.classList.add('picker-mode-early');
+                if (params.get("picker") === "true") {
+                    document.documentElement.classList.add("picker-mode-early");
                 }
             })();
         </script>
         <style>
             /* Hide everything until ready in picker mode */
-            .picker-mode-early body { visibility: hidden; }
-            .picker-mode-early.picker-ready body { visibility: visible; }
+            .picker-mode-early body {
+                visibility: hidden;
+            }
+            .picker-mode-early.picker-ready body {
+                visibility: visible;
+            }
         </style>
     </head>
     <body>
         <div class="app-container">
-            <!-- Tab Bar -->
             <div class="tab-bar" id="tab-bar"></div>
 
-            <!-- Toolbar -->
             <div class="toolbar">
                 <div class="nav-buttons">
-                    <button class="nav-btn sidebar-toggle" id="sidebar-toggle-btn" title="Toggle Sidebar">
+                    <button
+                        class="nav-btn sidebar-toggle"
+                        id="sidebar-toggle-btn"
+                        title="Toggle Sidebar"
+                    >
                         <svg
                             viewBox="0 0 24 24"
                             fill="none"
@@ -92,25 +98,59 @@
                 </div>
 
                 <div class="action-buttons">
-                    <button class="action-btn" id="new-folder-btn" title="New Folder">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    <button
+                        class="action-btn"
+                        id="new-folder-btn"
+                        title="New Folder"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+                            ></path>
                             <line x1="12" y1="11" x2="12" y2="17"></line>
                             <line x1="9" y1="14" x2="15" y2="14"></line>
                         </svg>
                     </button>
-                    <button class="action-btn" id="new-file-btn" title="New File">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <button
+                        class="action-btn"
+                        id="new-file-btn"
+                        title="New File"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+                            ></path>
                             <polyline points="14 2 14 8 20 8"></polyline>
                             <line x1="12" y1="11" x2="12" y2="17"></line>
                             <line x1="9" y1="14" x2="15" y2="14"></line>
                         </svg>
                     </button>
-                    <button class="action-btn action-btn-wide" id="empty-trash-btn" title="Empty Trash" style="display: none;">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button
+                        class="action-btn action-btn-wide"
+                        id="empty-trash-btn"
+                        title="Empty Trash"
+                        style="display: none"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
                             <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                            <path
+                                d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+                            ></path>
                         </svg>
                         <span>Empty Trash</span>
                     </button>
@@ -134,21 +174,16 @@
                         placeholder="Search files..."
                     />
                 </div>
-
             </div>
 
-            <!-- Sidebar overlay backdrop (for mobile) -->
             <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 
-            <!-- Main Content -->
             <div class="main-content">
-                <!-- Sidebar -->
                 <div class="sidebar" id="sidebar">
                     <div class="sidebar-scroll-area">
                         <div class="sidebar-section">
                             <div class="sidebar-title">Quick Access</div>
 
-                            <!-- Quick Access items (built-ins + pins) are rendered dynamically -->
                             <div id="pinned-list"></div>
                         </div>
 
@@ -164,7 +199,6 @@
                     </div>
                 </div>
 
-                <!-- File List Container -->
                 <div class="file-list-container">
                     <div class="file-list-header">
                         <div></div>
@@ -173,22 +207,33 @@
                         <div class="header-date">Modified</div>
                         <div class="header-added">Added</div>
                     </div>
-                    <div class="file-list" id="file-grid">
-                        <!-- Files will be populated dynamically -->
-                    </div>
+                    <div class="file-list" id="file-grid"></div>
                 </div>
 
-                <!-- Preview Panel -->
                 <div class="preview-panel" id="preview-panel">
                     <div class="preview-header">
                         <span class="preview-title">Preview</span>
                     </div>
                     <div class="preview-content" id="preview-content">
                         <div class="preview-empty">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" width="64" height="64">
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-                                <circle cx="8.5" cy="8.5" r="1.5"/>
-                                <polyline points="21,15 16,10 5,21"/>
+                            <svg
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="1"
+                                width="64"
+                                height="64"
+                            >
+                                <rect
+                                    x="3"
+                                    y="3"
+                                    width="18"
+                                    height="18"
+                                    rx="2"
+                                    ry="2"
+                                />
+                                <circle cx="8.5" cy="8.5" r="1.5" />
+                                <polyline points="21,15 16,10 5,21" />
                             </svg>
                             <p>Select a file to preview</p>
                         </div>
@@ -196,22 +241,41 @@
                 </div>
             </div>
 
-            <!-- Progress Bar -->
             <div class="progress-bar-container" id="progress-bar-container">
                 <div class="progress-bar-fill" id="progress-bar-fill"></div>
             </div>
 
-            <!-- Status Bar -->
             <div class="status-bar">
                 <div class="status-left">
                     <span id="item-count">0 items</span>
-                    <button id="view-mode-btn" class="status-bar-icon-btn" title="View Mode">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle>
+                    <button
+                        id="view-mode-btn"
+                        class="status-bar-icon-btn"
+                        title="View Mode"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                            ></path>
+                            <circle cx="12" cy="12" r="3"></circle>
                         </svg>
                     </button>
-                    <button id="sort-btn" class="status-bar-icon-btn" title="Sort">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button
+                        id="sort-btn"
+                        class="status-bar-icon-btn"
+                        title="Sort"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
                             <line x1="4" y1="21" x2="4" y2="14" />
                             <line x1="4" y1="10" x2="4" y2="3" />
                             <line x1="12" y1="21" x2="12" y2="12" />
@@ -223,13 +287,33 @@
                             <line x1="17" y1="16" x2="23" y2="16" />
                         </svg>
                     </button>
-                    <button id="group-btn" class="status-bar-icon-btn" title="Group">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+                    <button
+                        id="group-btn"
+                        class="status-bar-icon-btn"
+                        title="Group"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <path
+                                d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+                            ></path>
                         </svg>
                     </button>
-                    <button id="settings-btn" class="status-bar-icon-btn" title="Settings">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <button
+                        id="settings-btn"
+                        class="status-bar-icon-btn"
+                        title="Settings"
+                    >
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
                             <line x1="3" y1="12" x2="21" y2="12"></line>
                             <line x1="3" y1="6" x2="21" y2="6"></line>
                             <line x1="3" y1="18" x2="21" y2="18"></line>
@@ -243,31 +327,19 @@
             </div>
         </div>
 
-        <!-- Context Menu (dynamic content injected by renderer.js) -->
         <div class="context-menu" id="context-menu">
-            <div class="context-menu-panel" id="context-menu-panel">
-                <!-- menu items are rendered dynamically -->
-            </div>
+            <div class="context-menu-panel" id="context-menu-panel"></div>
 
-            <!-- Submenu panel (e.g. New ▸) -->
             <div
                 class="context-submenu"
                 id="context-submenu"
                 style="display: none"
-            >
-                <!-- submenu items are rendered dynamically -->
-            </div>
+            ></div>
         </div>
 
-        <!-- View Options Menu -->
-        <div class="view-menu" id="view-menu">
-            <!-- dynamic content -->
-        </div>
+        <div class="view-menu" id="view-menu"></div>
 
-        <!-- Settings Menu -->
-        <div class="settings-menu" id="settings-menu">
-            <!-- dynamic content -->
-        </div>
+        <div class="settings-menu" id="settings-menu"></div>
 
         <script src="renderer.js"></script>
     </body>
