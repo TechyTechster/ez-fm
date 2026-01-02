@@ -41,7 +41,7 @@ sudo apt install nodejs npm
 
 ```bash
 # Clone the repository
-git clone https://github.com/tomiwaf/ez-fm.git
+git clone https://github.com/TechyTechster/ez-fm.git
 cd ez-fm
 
 # Install dependencies

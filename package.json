@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/tomiwaf/ez-fm.git"
+    "url": "https://github.com/TechyTechster/ez-fm.git"
   },
   "keywords": [
     "file-manager",
@@ -26,9 +26,9 @@
   "author": "tomiwaf",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/tomiwaf/ez-fm/issues"
+    "url": "https://github.com/TechyTechster/ez-fm/issues"
   },
-  "homepage": "https://github.com/tomiwaf/ez-fm#readme",
+  "homepage": "https://github.com/TechyTechster/ez-fm#readme",
   "engines": {
     "node": ">=18.0.0"
   },
