@@ -21,7 +21,7 @@ const fsSync = require("fs");
 const sizeOf = require("image-size");
 
 const isPicker = process.argv.includes("--picker");
-let isDev = false;
+let devtoolsEnabled = false;
 
 app.name = "ez-fm";
 
@@ -60,7 +60,7 @@ function createWindow() {
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      devTools: isDev,
+      devTools: devtoolsEnabled,
       preload: path.join(__dirname, "preload.js"),
     },
   });
@@ -136,7 +136,7 @@ function createWindow() {
 
     if (isF12 || isCtrlShiftI) {
       event.preventDefault();
-      if (isDev && mainWindow && !mainWindow.isDestroyed()) {
+      if (devtoolsEnabled && mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.webContents.toggleDevTools();
       }
     }
@@ -148,10 +148,10 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  isDev = !app.isPackaged || process.env.EZFM_DEVTOOLS === "1";
+  devtoolsEnabled = process.env.EZFM_DEVTOOLS === "1";
   createWindow();
 
-  if (isDev) {
+  if (devtoolsEnabled) {
     const registerDevtoolsShortcut = (accelerator) => {
       globalShortcut.register(accelerator, () => {
         if (mainWindow && !mainWindow.isDestroyed()) {
