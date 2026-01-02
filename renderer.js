@@ -3706,6 +3706,69 @@ function refresh() {
   navigateTo(currentPath);
 }
 
+function toggleHiddenFiles() {
+  showHidden = !showHidden;
+  try { localStorage.setItem("showHidden", String(showHidden)); } catch {}
+  renderFiles();
+  updateStatusBar();
+  // Update any toggle buttons
+  const toggleBtn = document.getElementById("toggle-hidden-btn");
+  if (toggleBtn) toggleBtn.classList.toggle("active", showHidden);
+  const pickerToggle = document.getElementById("picker-hidden-toggle");
+  if (pickerToggle) pickerToggle.classList.toggle("active", showHidden);
+}
+
+function focusPathBar() {
+  const pathBar = document.querySelector(".path-bar");
+  const breadcrumb = document.getElementById("path-segments");
+  if (!pathBar || !breadcrumb) return;
+
+  // Check if input already exists
+  let pathInput = document.getElementById("path-input");
+  if (pathInput) {
+    pathInput.focus();
+    pathInput.select();
+    return;
+  }
+
+  // Hide breadcrumb, show input
+  breadcrumb.style.display = "none";
+
+  pathInput = document.createElement("input");
+  pathInput.type = "text";
+  pathInput.id = "path-input";
+  pathInput.className = "path-input";
+  pathInput.value = currentPath;
+  pathBar.appendChild(pathInput);
+
+  pathInput.focus();
+  pathInput.select();
+
+  const closePathInput = () => {
+    pathInput.remove();
+    breadcrumb.style.display = "";
+  };
+
+  pathInput.addEventListener("keydown", async (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      const newPath = pathInput.value.trim();
+      closePathInput();
+      if (newPath && newPath !== currentPath) {
+        await navigateTo(newPath);
+      }
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      closePathInput();
+    }
+  });
+
+  pathInput.addEventListener("blur", () => {
+    // Delay to allow click events to fire
+    setTimeout(closePathInput, 150);
+  });
+}
+
 // Update status bar
 function updateStatusBar() {
   if (itemCountEl) {
@@ -4699,6 +4762,18 @@ function handleKeyboard(e) {
       case "w":
         e.preventDefault();
         closeTab(activeTabIndex);
+        break;
+      case "l":
+        e.preventDefault();
+        focusPathBar();
+        break;
+      case "f":
+        e.preventDefault();
+        if (searchInput) searchInput.focus();
+        break;
+      case "h":
+        e.preventDefault();
+        toggleHiddenFiles();
         break;
     }
   } else {

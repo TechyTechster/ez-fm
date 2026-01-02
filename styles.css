@@ -369,6 +369,24 @@ body {
     padding: 0 2px;
 }
 
+.path-input {
+    flex: 1;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--accent-color);
+    border-radius: 6px;
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-family: inherit;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(var(--accent-color-rgb), 0.2);
+}
+
+.path-input:focus {
+    border-color: var(--accent-color);
+}
+
 /* Search Bar */
 .search-container {
     position: relative;
