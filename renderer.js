@@ -3765,9 +3765,14 @@ function focusPathBar() {
   pathInput.addEventListener("keydown", async (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
-      const newPath = pathInput.value.trim();
+      let newPath = pathInput.value.trim();
       closePathInput();
       if (newPath && newPath !== currentPath) {
+        // Expand ~ to home directory
+        if (newPath.startsWith("~")) {
+          const home = await window.fileManager.getHomeDirectory();
+          newPath = newPath.replace(/^~/, home);
+        }
         await navigateTo(newPath);
       }
     } else if (e.key === "Escape") {
