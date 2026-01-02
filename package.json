@@ -1,0 +1,42 @@
+{
+  "name": "ez-fm",
+  "version": "1.0.0",
+  "description": "A modern, transparent file manager for Linux with glassmorphism UI and XDG Desktop Portal integration",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --enable-logging",
+    "portal": "node portal-service.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tomiwaf/ez-fm.git"
+  },
+  "keywords": [
+    "file-manager",
+    "electron",
+    "linux",
+    "wayland",
+    "hyprland",
+    "transparent",
+    "glassmorphism",
+    "xdg-portal",
+    "file-picker"
+  ],
+  "author": "tomiwaf",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tomiwaf/ez-fm/issues"
+  },
+  "homepage": "https://github.com/tomiwaf/ez-fm#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "electron": "^28.0.0"
+  },
+  "dependencies": {
+    "dbus-next": "^0.10.2",
+    "image-size": "^2.0.2"
+  }
+}

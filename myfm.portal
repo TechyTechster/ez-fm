@@ -1,0 +1,5 @@
+[portal]
+DBusName=org.freedesktop.impl.portal.myfm
+Interfaces=org.freedesktop.impl.portal.FileChooser
+UseIn=hyprland;wlroots;sway;
+Priority=100

@@ -1,0 +1,22 @@
+[Unit]
+Description=Custom File Manager Portal Backend
+Documentation=https://flatpak.github.io/xdg-desktop-portal/
+PartOf=graphical-session.target
+After=xdg-desktop-portal.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/node /home/tomiwaf/.local/share/transparent-file-manager/portal-service.js
+Restart=on-failure
+RestartSec=5
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+
+# Security (optional but recommended)
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=xdg-desktop-portal.service
