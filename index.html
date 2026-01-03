@@ -333,6 +333,35 @@
 
         <div class="settings-menu" id="settings-menu"></div>
 
+        <div class="theme-modal" id="theme-modal">
+            <div class="theme-modal-panel">
+                <div class="theme-modal-header">
+                    <div class="theme-modal-title">Customize Colors</div>
+                    <button class="theme-modal-close" id="theme-close-btn" title="Close">
+                        <svg
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2"
+                        >
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+                <div class="theme-modal-body" id="theme-modal-body"></div>
+                <div class="theme-modal-footer">
+                    <button class="theme-btn" id="theme-reset-btn">
+                        Reset to Default
+                    </button>
+                    <div class="theme-footer-spacer"></div>
+                    <button class="theme-btn primary" id="theme-save-btn">
+                        Done
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <script src="renderer.js"></script>
     </body>
 </html>

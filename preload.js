@@ -12,6 +12,7 @@ const fileManagerApi = {
   mountDevice: invoke("mount-device"),
   unmountDevice: invoke("unmount-device"),
   getParentDirectory: invoke("get-parent-directory"),
+  getWalThemes: invoke("get-wal-themes"),
 
   openFile: invoke("open-file"),
   showInFolder: invoke("show-in-folder"),

@@ -42,6 +42,91 @@ const TAG_HEX = {
   gray: "#8e8e93",
 };
 
+const BUILTIN_ICONS = {
+  folder: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
+  home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`,
+  desktop: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
+  documents: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
+  downloads: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
+  pictures: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`,
+  music: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
+  videos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23,7 16,12 23,17 23,7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
+  config: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
+  trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
+  root: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16"/><path d="M12 4v16"/></svg>`,
+};
+
+const THEME_COLOR_GROUPS = [
+  {
+    title: "Backgrounds",
+    items: [
+      { label: "App background", varName: "--bg-primary", hint: "Main window" },
+      { label: "Toolbar & status", varName: "--bg-secondary", hint: "Top/bottom bars" },
+      { label: "Panels", varName: "--bg-tertiary", hint: "Cards and buttons" },
+      { label: "Overlays", varName: "--bg-overlay", hint: "Floating surfaces" },
+      { label: "Menus", varName: "--menu-bg", hint: "Context + view menus" },
+      { label: "Menu overlay", varName: "--menu-overlay-bg", hint: "Menu backplates" },
+      { label: "Hover highlight", varName: "--bg-hover", hint: "Hover state" },
+      { label: "Active highlight", varName: "--bg-active", hint: "Active state" },
+      { label: "Modal backdrop", varName: "--modal-backdrop", hint: "Dim background" },
+    ],
+  },
+  {
+    title: "Text & Lines",
+    items: [
+      { label: "Primary text", varName: "--text-primary", hint: "Main labels" },
+      { label: "Secondary text", varName: "--text-secondary", hint: "Subtitles" },
+      { label: "Muted text", varName: "--text-muted", hint: "Hints and meta" },
+      { label: "Borders", varName: "--border-color", hint: "Dividers" },
+    ],
+  },
+  {
+    title: "Accents",
+    items: [
+      { label: "Accent", varName: "--accent-color", hint: "Highlights" },
+      { label: "Accent hover", varName: "--accent-hover", hint: "Active icons" },
+      { label: "Success", varName: "--success-color", hint: "Success status" },
+      { label: "Danger", varName: "--danger-color", hint: "Warnings" },
+    ],
+  },
+];
+const THEME_COLOR_VARS = THEME_COLOR_GROUPS.reduce((acc, group) => {
+  for (const item of group.items) acc.push(item.varName);
+  return acc;
+}, []);
+const THEME_BASE_PRESETS = {
+  dark: {
+    "--bg-primary": "rgba(30, 30, 40, 0)",
+    "--bg-secondary": "rgba(45, 45, 60, 0)",
+    "--bg-tertiary": "rgba(60, 60, 80, 0)",
+    "--bg-overlay": "rgba(100, 100, 100, 0)",
+    "--menu-bg": "rgba(30, 30, 40, 0.6)",
+    "--menu-overlay-bg": "rgba(30, 30, 40, 0.7)",
+    "--bg-hover": "rgba(255, 255, 255, 0.25)",
+    "--bg-active": "rgba(100, 100, 100, 0.5)",
+    "--modal-backdrop": "rgba(0, 0, 0, 0.5)",
+    "--text-primary": "rgba(255, 255, 255, 0.95)",
+    "--text-secondary": "rgba(255, 255, 255, 0.7)",
+    "--text-muted": "rgba(255, 255, 255, 0.5)",
+    "--border-color": "rgba(255, 255, 255, 0.1)",
+  },
+  light: {
+    "--bg-primary": "rgba(245, 245, 250, 0)",
+    "--bg-secondary": "rgba(250, 250, 252, 0.55)",
+    "--bg-tertiary": "rgba(255, 255, 255, 0.45)",
+    "--bg-overlay": "rgba(255, 255, 255, 0.65)",
+    "--menu-bg": "rgba(255, 255, 255, 0.78)",
+    "--menu-overlay-bg": "rgba(255, 255, 255, 0.88)",
+    "--bg-hover": "rgba(0, 0, 0, 0.08)",
+    "--bg-active": "rgba(0, 0, 0, 0.16)",
+    "--modal-backdrop": "rgba(0, 0, 0, 0.5)",
+    "--text-primary": "rgba(20, 20, 24, 0.92)",
+    "--text-secondary": "rgba(20, 20, 24, 0.68)",
+    "--text-muted": "rgba(20, 20, 24, 0.45)",
+    "--border-color": "rgba(0, 0, 0, 0.12)",
+  },
+};
+
 const QUICK_ACCESS_STORAGE_KEY = "quickAccessItemsV1";
 const DEFAULT_BUILTINS = [
   { id: "trash", type: "builtin", key: "trash", label: "Trash" },
@@ -172,6 +257,15 @@ function readLocalStorageNumber(key, fallback) {
   }
 }
 
+function readLocalStorageString(key, fallback) {
+  try {
+    const value = localStorage.getItem(key);
+    return value === null ? fallback : value;
+  } catch {
+    return fallback;
+  }
+}
+
 function readLocalStorageJson(key, fallback) {
   try {
     const value = localStorage.getItem(key);
@@ -180,6 +274,349 @@ function readLocalStorageJson(key, fallback) {
   } catch {
     return fallback;
   }
+}
+
+function applyThemeOverrides(overrides) {
+  themeOverrides = { ...(overrides || {}) };
+  const root = document.documentElement;
+  for (const [key, value] of Object.entries(themeOverrides)) {
+    if (value) root.style.setProperty(key, value);
+  }
+}
+
+function saveThemeOverrides() {
+  try {
+    localStorage.setItem("themeColors", JSON.stringify(themeOverrides));
+  } catch {}
+}
+
+function ensureColorProbe() {
+  if (colorProbe) return colorProbe;
+  colorProbe = document.createElement("span");
+  colorProbe.style.display = "none";
+  document.body.appendChild(colorProbe);
+  return colorProbe;
+}
+
+function parseRgbValue(value) {
+  const match = value.match(/rgba?\(([^)]+)\)/);
+  if (!match) return { r: 255, g: 255, b: 255, a: 1 };
+  const parts = match[1].split(",").map((part) => part.trim());
+  const r = Number(parts[0]);
+  const g = Number(parts[1]);
+  const b = Number(parts[2]);
+  const a = parts[3] !== undefined ? Number(parts[3]) : 1;
+  return {
+    r: Number.isFinite(r) ? r : 255,
+    g: Number.isFinite(g) ? g : 255,
+    b: Number.isFinite(b) ? b : 255,
+    a: Number.isFinite(a) ? a : 1,
+  };
+}
+
+function normalizeColorValue(value) {
+  const probe = ensureColorProbe();
+  probe.style.color = "";
+  probe.style.color = value || "";
+  const computed = getComputedStyle(probe).color;
+  return parseRgbValue(computed);
+}
+
+function rgbaFromColor(value, alpha) {
+  const { r, g, b } = normalizeColorValue(value);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
+function inferWalVariant(theme) {
+  const ref = `${theme?.path || ""} ${theme?.name || ""}`.toLowerCase();
+  if (ref.includes("/light/") || ref.includes("\\light\\")) return "light";
+  if (ref.includes("/dark/") || ref.includes("\\dark\\")) return "dark";
+  return "dark";
+}
+
+function rgbToHex(r, g, b) {
+  return (
+    "#" +
+    [r, g, b]
+      .map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0"))
+      .join("")
+  );
+}
+
+function hexToRgb(hex) {
+  const cleaned = String(hex || "").replace("#", "");
+  if (cleaned.length !== 6) return { r: 255, g: 255, b: 255 };
+  const r = parseInt(cleaned.slice(0, 2), 16);
+  const g = parseInt(cleaned.slice(2, 4), 16);
+  const b = parseInt(cleaned.slice(4, 6), 16);
+  return { r, g, b };
+}
+
+function buildThemeModal() {
+  if (!themeModalBody) return;
+  themeModalBody.innerHTML = "";
+  themeControlMap.clear();
+
+  const walSection = document.createElement("div");
+  walSection.className = "theme-section";
+
+  const walHeader = document.createElement("div");
+  walHeader.className = "theme-section-title";
+  walHeader.textContent = "Wal Themes";
+  walSection.appendChild(walHeader);
+
+  const walRow = document.createElement("div");
+  walRow.className = "theme-row";
+
+  const walLabel = document.createElement("div");
+  walLabel.className = "theme-label";
+
+  const walName = document.createElement("div");
+  walName.className = "theme-name";
+  walName.textContent = "Apply a wal colorscheme";
+
+  const walHint = document.createElement("div");
+  walHint.className = "theme-hint";
+  walHint.textContent = "~/.config/wal/colorschemes/*.json";
+
+  walLabel.appendChild(walName);
+  walLabel.appendChild(walHint);
+
+  const walControls = document.createElement("div");
+  walControls.className = "theme-controls theme-inline-actions";
+
+  walThemeSelect = document.createElement("select");
+  walThemeSelect.className = "theme-select";
+
+  walApplyBtn = document.createElement("button");
+  walApplyBtn.className = "theme-btn";
+  walApplyBtn.textContent = "Apply";
+
+  walRefreshBtn = document.createElement("button");
+  walRefreshBtn.className = "theme-btn";
+  walRefreshBtn.textContent = "Refresh";
+
+  walControls.appendChild(walThemeSelect);
+  walControls.appendChild(walApplyBtn);
+  walControls.appendChild(walRefreshBtn);
+
+  walRow.appendChild(walLabel);
+  walRow.appendChild(walControls);
+  walSection.appendChild(walRow);
+  themeModalBody.appendChild(walSection);
+
+  walThemeSelect.addEventListener("change", () => {
+    if (walApplyBtn) walApplyBtn.disabled = !walThemeSelect.value;
+  });
+
+  walApplyBtn.addEventListener("click", () => {
+    const selected = walThemeSelect.value;
+    const theme = walThemes.find((t) => t.path === selected);
+    if (theme) applyWalTheme(theme);
+  });
+
+  walRefreshBtn.addEventListener("click", () => {
+    refreshWalThemes();
+  });
+
+  for (const group of THEME_COLOR_GROUPS) {
+    const section = document.createElement("div");
+    section.className = "theme-section";
+
+    const header = document.createElement("div");
+    header.className = "theme-section-title";
+    header.textContent = group.title;
+    section.appendChild(header);
+
+    for (const item of group.items) {
+      const row = document.createElement("div");
+      row.className = "theme-row";
+
+      const label = document.createElement("div");
+      label.className = "theme-label";
+
+      const name = document.createElement("div");
+      name.className = "theme-name";
+      name.textContent = item.label;
+
+      const hint = document.createElement("div");
+      hint.className = "theme-hint";
+      hint.textContent = item.hint || "";
+
+      label.appendChild(name);
+      label.appendChild(hint);
+
+      const controls = document.createElement("div");
+      controls.className = "theme-controls";
+
+      const colorInput = document.createElement("input");
+      colorInput.type = "color";
+      colorInput.className = "theme-color-input";
+
+      const opacityWrap = document.createElement("div");
+      opacityWrap.className = "theme-opacity";
+
+      const alphaInput = document.createElement("input");
+      alphaInput.type = "range";
+      alphaInput.min = "0";
+      alphaInput.max = "100";
+      alphaInput.className = "theme-alpha-input";
+
+      const alphaValue = document.createElement("span");
+      alphaValue.className = "theme-alpha-value";
+
+      opacityWrap.appendChild(alphaInput);
+      opacityWrap.appendChild(alphaValue);
+
+      controls.appendChild(colorInput);
+      controls.appendChild(opacityWrap);
+
+      row.appendChild(label);
+      row.appendChild(controls);
+      section.appendChild(row);
+
+      const updateVar = () => {
+        const alpha = Number(alphaInput.value) / 100;
+        const rgb = hexToRgb(colorInput.value);
+        const value = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+        document.documentElement.style.setProperty(item.varName, value);
+        themeOverrides[item.varName] = value;
+        alphaValue.textContent = `${alphaInput.value}%`;
+        saveThemeOverrides();
+      };
+
+      colorInput.addEventListener("input", updateVar);
+      alphaInput.addEventListener("input", updateVar);
+
+      themeControlMap.set(item.varName, {
+        colorInput,
+        alphaInput,
+        alphaValue,
+      });
+    }
+
+    themeModalBody.appendChild(section);
+  }
+
+  refreshWalThemes();
+}
+
+function syncThemeControls() {
+  const styles = getComputedStyle(document.documentElement);
+  for (const [varName, controls] of themeControlMap.entries()) {
+    const raw = styles.getPropertyValue(varName).trim();
+    const { r, g, b, a } = normalizeColorValue(raw);
+    controls.colorInput.value = rgbToHex(r, g, b);
+    controls.alphaInput.value = String(Math.round(a * 100));
+    controls.alphaValue.textContent = `${controls.alphaInput.value}%`;
+  }
+}
+
+function buildWalOverrides(theme) {
+  const variant = inferWalVariant(theme);
+  const base = THEME_BASE_PRESETS[variant] || THEME_BASE_PRESETS.dark;
+  const foreground = theme?.special?.foreground || theme?.colors?.color7 || "#f0f0f0";
+  const accent = theme?.colors?.color4 || theme?.colors?.color6 || foreground;
+  const accentHover = theme?.colors?.color12 || theme?.colors?.color6 || foreground;
+  const success = theme?.colors?.color2 || "#28c940";
+  const danger = theme?.colors?.color1 || "#ff5f57";
+
+  return {
+    ...base,
+    "--accent-color": rgbaFromColor(accent, 0.5),
+    "--accent-hover": rgbaFromColor(accentHover, 0.95),
+    "--success-color": rgbaFromColor(success, 0.8),
+    "--danger-color": rgbaFromColor(danger, 0.8),
+  };
+}
+
+function applyWalTheme(theme) {
+  const overrides = buildWalOverrides(theme);
+  applyThemeOverrides(overrides);
+  saveThemeOverrides();
+  try {
+    localStorage.setItem("walThemePath", theme.path);
+  } catch {}
+  syncThemeControls();
+}
+
+function populateWalSelect() {
+  if (!walThemeSelect) return;
+  walThemeSelect.innerHTML = "";
+
+  if (!walThemes.length) {
+    const option = document.createElement("option");
+    option.value = "";
+    option.textContent = "No wal themes found";
+    walThemeSelect.appendChild(option);
+    walThemeSelect.disabled = true;
+    if (walApplyBtn) walApplyBtn.disabled = true;
+    return;
+  }
+
+  const placeholder = document.createElement("option");
+  placeholder.value = "";
+  placeholder.textContent = "Select a wal theme";
+  walThemeSelect.appendChild(placeholder);
+
+  const lastPath = readLocalStorageString("walThemePath", "");
+  for (const theme of walThemes) {
+    const option = document.createElement("option");
+    option.value = theme.path;
+    option.textContent = theme.name;
+    if (lastPath && theme.path === lastPath) {
+      option.selected = true;
+    }
+    walThemeSelect.appendChild(option);
+  }
+
+  walThemeSelect.disabled = false;
+  if (walApplyBtn) walApplyBtn.disabled = !walThemeSelect.value;
+}
+
+async function refreshWalThemes() {
+  if (!walThemeSelect || !window.fileManager?.getWalThemes) return;
+  walThemeSelect.innerHTML = "";
+  const loading = document.createElement("option");
+  loading.textContent = "Loading...";
+  loading.value = "";
+  walThemeSelect.appendChild(loading);
+  walThemeSelect.disabled = true;
+  if (walApplyBtn) walApplyBtn.disabled = true;
+
+  try {
+    const list = await window.fileManager.getWalThemes();
+    walThemes = Array.isArray(list) ? list : [];
+  } catch {
+    walThemes = [];
+  }
+  populateWalSelect();
+}
+
+function openThemeCustomizer() {
+  if (!themeModal) return;
+  if (!themeModalBody || themeModalBody.childElementCount === 0) {
+    buildThemeModal();
+  }
+  refreshWalThemes();
+  syncThemeControls();
+  themeModal.classList.add("visible");
+}
+
+function closeThemeCustomizer() {
+  if (!themeModal) return;
+  themeModal.classList.remove("visible");
+}
+
+function resetThemeToDefaults() {
+  themeOverrides = {};
+  try {
+    localStorage.removeItem("themeColors");
+  } catch {}
+  for (const varName of THEME_COLOR_VARS) {
+    document.documentElement.style.removeProperty(varName);
+  }
+  syncThemeControls();
 }
 
 function scheduleIdle(task, timeout = 800) {
@@ -383,6 +820,86 @@ function showDeleteChoiceModal(title, message) {
   });
 }
 
+function showConfirmModal(title, message, confirmLabel = "Confirm") {
+  return new Promise((resolve) => {
+    const overlay = document.createElement("div");
+    overlay.setAttribute("data-role", "fm-confirm-overlay");
+    overlay.style.cssText = `
+      position: fixed;
+      inset: 0;
+      background: var(--modal-backdrop);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 6000;
+    `;
+
+    const dialog = document.createElement("div");
+    dialog.style.cssText = `
+      width: 440px;
+      max-width: calc(100vw - 32px);
+      background: var(--bg-overlay);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+      color: var(--text-primary);
+    `;
+
+    dialog.innerHTML = `
+      <div style="font-size: 14px; font-weight: 700; margin-bottom: 10px;">${escapeHtmlAttr(title)}</div>
+      <div style="font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.4;">${escapeHtmlAttr(message)}</div>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button data-role="fm-confirm-cancel" style="
+          padding: 9px 12px;
+          border-radius: 10px;
+          border: 1px solid var(--border-color);
+          background: var(--bg-tertiary);
+          color: var(--text-primary);
+          cursor: pointer;
+        ">Cancel</button>
+        <button data-role="fm-confirm-ok" style="
+          padding: 9px 12px;
+          border-radius: 10px;
+          border: none;
+          background: var(--danger-color);
+          color: white;
+          cursor: pointer;
+        ">${escapeHtmlAttr(confirmLabel)}</button>
+      </div>
+    `;
+
+    overlay.appendChild(dialog);
+    document.body.appendChild(overlay);
+
+    const cancel = dialog.querySelector('[data-role="fm-confirm-cancel"]');
+    const ok = dialog.querySelector('[data-role="fm-confirm-ok"]');
+
+    const cleanup = () => overlay.remove();
+    const finish = (val) => {
+      cleanup();
+      resolve(val);
+    };
+
+    cancel.addEventListener("click", () => finish(false));
+    ok.addEventListener("click", () => finish(true));
+
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) finish(false);
+    });
+
+    document.addEventListener(
+      "keydown",
+      function onKey(e) {
+        if (e.key === "Escape") finish(false);
+      },
+      { once: true },
+    );
+  });
+}
+
 const folderSizeCache = new Map();
 const folderSizeInFlight = new Map();
 const folderSizeQueue = [];
@@ -395,6 +912,7 @@ const MAX_VIEW_SETTINGS_CACHE_ENTRIES = 100;
 const MAX_HISTORY_LENGTH = 50;
 const MAX_ITEMS_BEFORE_VIRTUAL_SCROLL = 200;
 const MAX_LOADED_THUMBNAILS = 50;
+let groupHeaderRaf = null;
 
 function trimCache(cache, maxEntries) {
   if (cache.size <= maxEntries) return;
@@ -690,6 +1208,20 @@ let sortBtn;
 let groupBtn;
 let settingsMenu;
 let settingsBtn;
+let themeModal;
+let themeModalBody;
+let themeCloseBtn;
+let themeResetBtn;
+let themeSaveBtn;
+
+let themeOverrides = {};
+let themeControlMap = new Map();
+let colorProbe;
+
+let walThemes = [];
+let walThemeSelect;
+let walApplyBtn;
+let walRefreshBtn;
 
 function cacheDomRefs() {
   fileList = document.getElementById("file-grid");
@@ -710,6 +1242,11 @@ function cacheDomRefs() {
   groupBtn = document.getElementById("group-btn");
   settingsMenu = document.getElementById("settings-menu");
   settingsBtn = document.getElementById("settings-btn");
+  themeModal = document.getElementById("theme-modal");
+  themeModalBody = document.getElementById("theme-modal-body");
+  themeCloseBtn = document.getElementById("theme-close-btn");
+  themeResetBtn = document.getElementById("theme-reset-btn");
+  themeSaveBtn = document.getElementById("theme-save-btn");
 
   pinnedListEl = document.getElementById("pinned-list");
   drivesListEl = document.getElementById("drives-list");
@@ -743,6 +1280,7 @@ async function resolveStartupContext() {
 }
 
 function loadCorePreferences() {
+  applyThemeOverrides(readLocalStorageJson("themeColors", {}));
   showHidden = readLocalStorageBool("showHidden", showHidden);
 }
 
@@ -1100,15 +1638,20 @@ function renderTabs() {
   tabBarEl.innerHTML =
     tabs
       .map(
-        (tab, i) => `
+        (tab, i) => {
+          const icon = getTabIconForPath(tab.path);
+          const title = escapeHtml(getTabLabelForPath(tab.path));
+          const tooltip = escapeHtmlAttr(tab.path);
+          return `
     <div class="tab ${i === activeTabIndex ? "active" : ""}" data-tab-index="${i}">
-      <div class="tab-icon">${icons.folder}</div>
-      <div class="tab-title" title="${escapeHtmlAttr(tab.path)}">${escapeHtml(tab.path.split(/[/\\]/).pop() || tab.path)}</div>
+      <div class="tab-icon">${icon}</div>
+      <div class="tab-title" title="${tooltip}">${title}</div>
       <div class="tab-close" data-tab-close="${i}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="10" height="10"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
       </div>
     </div>
-  `,
+  `;
+        },
       )
       .join("") +
     `
@@ -1390,6 +1933,28 @@ function setupGlobalClickHandlers() {
   );
 }
 
+function setupThemeCustomizer() {
+  if (!themeModal) return;
+
+  buildThemeModal();
+
+  themeModal.addEventListener("click", (e) => {
+    if (e.target === themeModal) closeThemeCustomizer();
+  });
+
+  if (themeCloseBtn) {
+    themeCloseBtn.addEventListener("click", closeThemeCustomizer);
+  }
+
+  if (themeSaveBtn) {
+    themeSaveBtn.addEventListener("click", closeThemeCustomizer);
+  }
+
+  if (themeResetBtn) {
+    themeResetBtn.addEventListener("click", resetThemeToDefaults);
+  }
+}
+
 function closeAllMenus() {
   hideContextMenu();
   if (viewMenu) viewMenu.style.display = "none";
@@ -1522,6 +2087,8 @@ function setupFileListHandlers() {
       await handleFileDrop(externalPaths, currentPath, true);
     }
   });
+
+  fileList.addEventListener("scroll", updateGroupHeaderStacking);
 }
 
 function setupEventListeners() {
@@ -1533,10 +2100,12 @@ function setupEventListeners() {
   setupToolbarButtons();
   setupToggleButtons();
   setupViewMenuButtons();
+  setupThemeCustomizer();
   setupGlobalClickHandlers();
   setupContextMenuHandlers();
   setupFileListHandlers();
   window.addEventListener("blur", closeAllMenus);
+  window.addEventListener("resize", updateGroupHeaderStacking);
 
   setupQuickAccess();
 
@@ -1773,6 +2342,151 @@ function normalizePathForCompare(p) {
   return n === "" ? "/" : n;
 }
 
+function isPathWithin(basePath, candidatePath) {
+  if (!basePath || !candidatePath) return false;
+  const base = normalizePathForCompare(basePath);
+  const candidate = normalizePathForCompare(candidatePath);
+  if (!base || !candidate) return false;
+  if (candidate === base) return true;
+  if (base === "/") return true;
+  return candidate.startsWith(base + "/");
+}
+
+const EXTERNAL_MOUNT_PREFIXES = ["/run/media", "/media", "/mnt", "/Volumes"];
+
+function isExternalPath(path) {
+  const candidate = normalizePathForCompare(path);
+  if (!candidate) return false;
+  return EXTERNAL_MOUNT_PREFIXES.some(
+    (prefix) =>
+      candidate === prefix ||
+      (candidate.startsWith(prefix + "/") && prefix !== "/"),
+  );
+}
+
+function shouldCalculateFolderSizesForPath(path) {
+  if (!calculateFolderSizes) return false;
+  if (isExternalPath(path)) return false;
+  return true;
+}
+
+function cancelAllFolderSizeWork() {
+  folderSizeQueue.length = 0;
+  folderSizeInFlight.clear();
+}
+
+function updateFolderSizeCellsForCurrentView() {
+  if (!fileList) return;
+  const rows = Array.from(fileList.querySelectorAll(".file-item")).filter(
+    (el) => el.dataset.isDirectory === "true",
+  );
+  for (const row of rows) {
+    const cell = row.querySelector('[data-role="size"]');
+    if (cell) cell.textContent = "—";
+  }
+}
+
+function setFolderSizeEnabled(enabled) {
+  calculateFolderSizes = Boolean(enabled);
+  try {
+    localStorage.setItem("calculateFolderSizes", String(calculateFolderSizes));
+  } catch {}
+
+  if (!calculateFolderSizes) {
+    cancelAllFolderSizeWork();
+    updateFolderSizeCellsForCurrentView();
+  } else {
+    scheduleVisibleFolderSizes();
+  }
+}
+
+function cancelFolderSizeForPath(prefixPath) {
+  const base = normalizePathForCompare(prefixPath);
+  if (!base) return;
+
+  if (folderSizeQueue.length > 0) {
+    const remaining = folderSizeQueue.filter(
+      (p) => !isPathWithin(base, p),
+    );
+    folderSizeQueue.splice(0, folderSizeQueue.length, ...remaining);
+  }
+
+  for (const key of folderSizeInFlight.keys()) {
+    if (isPathWithin(base, key)) {
+      folderSizeInFlight.delete(key);
+    }
+  }
+
+  for (const key of folderSizeCache.keys()) {
+    if (isPathWithin(base, key)) {
+      folderSizeCache.delete(key);
+    }
+  }
+  saveFolderSizeCache();
+}
+
+async function prepareUnmount(mountPath) {
+  if (!mountPath) return;
+  const base = normalizePathForCompare(mountPath);
+  if (!base) return;
+
+  let homeDir = null;
+  try {
+    homeDir = await window.fileManager.getHomeDirectory();
+  } catch {}
+
+  const toClose = [];
+  for (let i = 0; i < tabs.length; i++) {
+    if (isPathWithin(base, tabs[i].path)) {
+      if (i === activeTabIndex) {
+        if (homeDir && normalizePathForCompare(currentPath) !== homeDir) {
+          await navigateTo(homeDir);
+        }
+      } else {
+        toClose.push(i);
+      }
+    }
+  }
+
+  toClose.sort((a, b) => b - a);
+  for (const idx of toClose) {
+    if (idx >= 0 && idx < tabs.length) {
+      await closeTab(idx);
+    }
+  }
+}
+
+function getBuiltinIconForPath(path) {
+  if (!path || !commonDirs) return null;
+  const needle = normalizePathForCompare(path);
+  for (const [key, value] of Object.entries(commonDirs)) {
+    if (!value) continue;
+    if (normalizePathForCompare(value) === needle) {
+      return BUILTIN_ICONS[key] || null;
+    }
+  }
+  return null;
+}
+
+function getTabIconForPath(path) {
+  if (String(path || "").startsWith("tag://")) return icons.folder;
+  return getBuiltinIconForPath(path) || icons.folder;
+}
+
+function getTabLabelForPath(path) {
+  if (!path) return "";
+  if (String(path).startsWith("tag://")) {
+    const tag = String(path).replace("tag://", "");
+    return tag ? `${tag.charAt(0).toUpperCase()}${tag.slice(1)}` : "Tags";
+  }
+  if (commonDirs && commonDirs.trash) {
+    const trashPath = normalizePathForCompare(commonDirs.trash);
+    if (normalizePathForCompare(path) === trashPath) return "Trash";
+  }
+  const parts = String(path).split(/[/\\]/).filter(Boolean);
+  return parts.pop() || path;
+}
+
 function loadQuickAccessItems() {
   try {
     const raw = localStorage.getItem(QUICK_ACCESS_STORAGE_KEY);
@@ -1948,24 +2662,10 @@ function renderPinnedItems() {
 
   pinnedListEl.innerHTML = "";
 
-  const ICONS = {
-    folder: `<svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>`,
-    home: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9,22 9,12 15,12 15,22"/></svg>`,
-    desktop: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>`,
-    documents: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>`,
-    downloads: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`,
-    pictures: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21,15 16,10 5,21"/></svg>`,
-    music: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>`,
-    videos: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="23,7 16,12 23,17 23,7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>`,
-    config: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>`,
-    trash: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3,6 5,6 21,6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>`,
-    root: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12h16"/><path d="M12 4v16"/></svg>`,
-  };
-
   const iconForQuickAccess = (qa) => {
-    if (qa.type === "pin") return ICONS.folder;
+    if (qa.type === "pin") return BUILTIN_ICONS.folder;
     const key = String(qa.key || "");
-    return ICONS[key] || ICONS.folder;
+    return BUILTIN_ICONS[key] || BUILTIN_ICONS.folder;
   };
 
   for (const qa of quickAccessItems) {
@@ -2155,12 +2855,38 @@ function buildDriveUsageBar(drive) {
 
 async function unmountDrive(drive) {
   try {
+    if (drive.mounted && drive.path) {
+      await prepareUnmount(drive.path);
+      cancelAllFolderSizeWork();
+      cancelFolderSizeForPath(drive.path);
+    }
     const result = await window.fileManager.unmountDevice(drive.device);
     if (result.success) {
       showNotification(`Unmounted ${drive.name || drive.device}`);
       await renderDisks();
       if (currentPath.startsWith(drive.path)) {
         await navigateTo(await window.fileManager.getHomeDirectory());
+      }
+    } else if (result.needsAuth) {
+      const password = await showTextInputModal(
+        "Authentication Required",
+        `Enter your password to unmount "${drive.name || drive.device}".`,
+        "",
+        "Unmount",
+        "password",
+      );
+      if (password === null) return;
+      const authResult = await window.fileManager.unmountDevice(drive.device, {
+        password,
+      });
+      if (authResult.success) {
+        showNotification(`Unmounted ${drive.name || drive.device}`);
+        await renderDisks();
+        if (currentPath.startsWith(drive.path)) {
+          await navigateTo(await window.fileManager.getHomeDirectory());
+        }
+      } else {
+        showNotification(authResult.error || "Could not unmount", "error");
       }
     } else {
       showNotification(result.error || "Could not unmount", "error");
@@ -2177,6 +2903,25 @@ async function mountDrive(drive) {
       showNotification(`Mounted ${drive.name || drive.device}`);
       await renderDisks();
       await navigateTo(result.mountpoint);
+    } else if (result.needsAuth) {
+      const password = await showTextInputModal(
+        "Authentication Required",
+        `Enter your password to mount "${drive.name || drive.device}".`,
+        "",
+        "Mount",
+        "password",
+      );
+      if (password === null) return;
+      const authResult = await window.fileManager.mountDevice(drive.device, {
+        password,
+      });
+      if (authResult.success && authResult.mountpoint) {
+        showNotification(`Mounted ${drive.name || drive.device}`);
+        await renderDisks();
+        await navigateTo(authResult.mountpoint);
+      } else {
+        showNotification(authResult.error || "Could not mount device", "error");
+      }
     } else {
       showNotification(result.error || "Could not mount device", "error");
     }
@@ -2508,6 +3253,7 @@ function finishNavigation() {
 
   clearThumbnailObserver();
   setupThumbnailObserver();
+  if (fileList) fileList.scrollTop = 0;
 
   if (scrollLoadObserver) {
     scrollLoadObserver.disconnect();
@@ -2727,8 +3473,14 @@ function renderViewMenu(type) {
       ),
     );
 
+    viewMenu.appendChild(createSep());
+    viewMenu.appendChild(
+      createOption("Show Folder Sizes", calculateFolderSizes, () => {
+        setFolderSizeEnabled(!calculateFolderSizes);
+        renderFiles();
+      }),
+    );
     if (viewMode === "detailed") {
-      viewMenu.appendChild(createSep());
       viewMenu.appendChild(createHeader("Columns"));
       viewMenu.appendChild(
         createOption("Size", visibleColumns.size, () => toggleColumn("size")),
@@ -2916,6 +3668,11 @@ function renderSettingsMenu() {
   `;
   settingsMenu.appendChild(appearanceHeader);
   settingsMenu.appendChild(
+    createOption("Customize Colors...", false, () => {
+      openThemeCustomizer();
+    }),
+  );
+  settingsMenu.appendChild(
     createOption("Show Preview Pane", showPreviewPane, () => {
       showPreviewPane = !showPreviewPane;
       try {
@@ -2932,27 +3689,6 @@ function renderSettingsMenu() {
       } catch {}
       renderFiles();
       updateStatusBar();
-    }),
-  );
-  settingsMenu.appendChild(
-    createOption("Calculate Folder Sizes", calculateFolderSizes, () => {
-      calculateFolderSizes = !calculateFolderSizes;
-      try {
-        localStorage.setItem(
-          "calculateFolderSizes",
-          String(calculateFolderSizes),
-        );
-      } catch {}
-      renderFiles();
-    }),
-  );
-
-  settingsMenu.appendChild(createSep());
-
-  settingsMenu.appendChild(createHeader("Navigation"));
-  settingsMenu.appendChild(
-    createOption("Open via System Dialog...", false, () => {
-      openLocationViaSystemPicker();
     }),
   );
 }
@@ -3054,9 +3790,7 @@ function formatSize(bytes) {
 }
 
 function folderSizeSpinnerHtml() {
-  return `
-    <span class="size-spinner" aria-label="Calculating size" title="Calculating…"></span>
-  `.trim();
+  return "—";
 }
 
 function formatDate(date) {
@@ -3438,6 +4172,32 @@ function sortGroups(groups) {
   return sortedGroups;
 }
 
+function updateGroupHeaderStacking() {
+  if (!fileList) return;
+  if (groupHeaderRaf) return;
+
+  groupHeaderRaf = requestAnimationFrame(() => {
+    groupHeaderRaf = null;
+    const headers = Array.from(fileList.querySelectorAll(".group-header"));
+    if (headers.length === 0) return;
+
+    const paddingTop = parseFloat(getComputedStyle(fileList).paddingTop) || 0;
+    const listTop = fileList.getBoundingClientRect().top + paddingTop + 1;
+    let lastStuckIndex = -1;
+    const tops = headers.map((header) => header.getBoundingClientRect().top);
+
+    for (let i = 0; i < tops.length; i++) {
+      if (tops[i] <= listTop) lastStuckIndex = i;
+    }
+
+    for (let i = 0; i < headers.length; i++) {
+      const isStuck = tops[i] <= listTop;
+      const hide = lastStuckIndex !== -1 && isStuck && i < lastStuckIndex;
+      headers[i].classList.toggle("group-header-hidden", hide);
+    }
+  });
+}
+
 function renderGroupedItems(groups, fragment) {
   const sortedGroups = sortGroups(groups);
 
@@ -3546,6 +4306,7 @@ function renderFiles() {
   }
 
   scheduleVisibleFolderSizes();
+  updateGroupHeaderStacking();
 }
 
 function escapeHtml(text) {
@@ -4503,19 +5264,28 @@ async function renameSelected() {
   }
 }
 
-async function deleteSelected() {
+async function deleteSelected(options = {}) {
   if (selectedItems.size === 0) return;
 
   const count = selectedItems.size;
 
-  const choice = isInTrash
-    ? "permanent"
-    : await showDeleteChoiceModal(
-        "Delete items",
-        `What do you want to do with ${count} item(s)?`,
-      );
+  let choice = "permanent";
+  if (!options.forcePermanent && !isInTrash) {
+    choice = await showDeleteChoiceModal(
+      "Delete items",
+      `What do you want to do with ${count} item(s)?`,
+    );
+  }
 
   if (!isInTrash && choice === "cancel") return;
+  if (choice === "permanent") {
+    const confirmed = await showConfirmModal(
+      "Permanently delete?",
+      `This will permanently delete ${count} item(s). This cannot be undone.`,
+      "Delete",
+    );
+    if (!confirmed) return;
+  }
 
   let sudoPassword = null;
   let sudoCancelled = false;
@@ -4792,6 +5562,14 @@ async function emptyTrash() {
 }
 
 function handleKeyboard(e) {
+  if (themeModal && themeModal.classList.contains("visible")) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      closeThemeCustomizer();
+    }
+    return;
+  }
+
   if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
 
   if (e.ctrlKey || e.metaKey) {
@@ -4841,7 +5619,7 @@ function handleKeyboard(e) {
   } else {
     switch (e.key) {
       case "Delete":
-        deleteSelected();
+        deleteSelected({ forcePermanent: e.shiftKey });
         break;
       case "F2":
         renameSelected();
@@ -4874,7 +5652,7 @@ function saveFolderSizeCache() {
 
 function scheduleVisibleFolderSizes() {
   if (!fileList) return;
-  if (!calculateFolderSizes) return;
+  if (!shouldCalculateFolderSizesForPath(currentPath)) return;
 
   const rows = Array.from(fileList.querySelectorAll(".file-item")).filter(
     (el) => el.dataset.isDirectory === "true",

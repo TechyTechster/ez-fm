@@ -23,6 +23,15 @@ app.name = "ez-fm";
 
 let mainWindow;
 
+function logCommandFailure(command, error) {
+  if (!command) return;
+  const message = error?.message || String(error || "");
+  const stderr = error?.stderr || "";
+  const stdout = error?.stdout || "";
+  const detail = [message, stderr, stdout].filter(Boolean).join("\n");
+  console.error(`[command failed] ${command}\n${detail}`);
+}
+
 
 function toFileUrl(p) {
   const withSlashes = p.replace(/\\/g, "/");
@@ -39,8 +48,61 @@ function getUserArgs() {
   return process.argv.filter((arg, idx) => {
     if (idx === 0) return false;
     if (arg === appPath || arg === exePath) return false;
-    return true;
+  return true;
   });
+}
+
+async function collectWalThemes() {
+  const walDir = path.join(app.getPath("home"), ".config", "wal", "colorschemes");
+  try {
+    const stat = await fs.stat(walDir);
+    if (!stat.isDirectory()) return [];
+  } catch {
+    return [];
+  }
+
+  const results = [];
+  const walk = async (dir, depth) => {
+    if (depth > 4) return;
+    let entries;
+    try {
+      entries = await fs.readdir(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        await walk(fullPath, depth + 1);
+        continue;
+      }
+      if (!entry.isFile() || !entry.name.endsWith(".json")) continue;
+
+      try {
+        const raw = await fs.readFile(fullPath, "utf8");
+        const data = JSON.parse(raw);
+        if (!data || !data.colors || !data.special) continue;
+        const rel = path
+          .relative(walDir, fullPath)
+          .replace(/\\/g, "/")
+          .replace(/\.json$/i, "");
+        const name = rel.split("/").join(" / ");
+        results.push({
+          name,
+          path: fullPath,
+          colors: data.colors,
+          special: data.special,
+          alpha: data.alpha,
+          wallpaper: data.wallpaper,
+        });
+      } catch {}
+    }
+  };
+
+  await walk(walDir, 0);
+  results.sort((a, b) => a.name.localeCompare(b.name));
+  return results;
 }
 
 function resolveStartPath(args) {
@@ -296,6 +358,14 @@ ipcMain.handle("get-home-directory", () => {
   return app.getPath("home");
 });
 
+ipcMain.handle("get-wal-themes", async () => {
+  try {
+    return await collectWalThemes();
+  } catch {
+    return [];
+  }
+});
+
 ipcMain.handle("get-common-directories", () => {
   const homePath = app.getPath("home");
 
@@ -511,6 +581,12 @@ ipcMain.handle("delete-item-sudo", async (event, itemPath, password) => {
     const child = exec(
       `sudo -S -k -p '' rm -rf "${safePath}"`,
       (error, stdout, stderr) => {
+        if (error) {
+          logCommandFailure(
+            `sudo -S -k -p '' rm -rf "${safePath}"`,
+            { message: error.message, stderr, stdout },
+          );
+        }
         resolve(
           error
             ? { success: false, error: stderr || error.message }
@@ -852,6 +928,7 @@ async function handleArchiveBrowsing(fullPath) {
   const util = require("util");
   const execPromise = util.promisify(exec);
 
+  let cmd = "";
   try {
     const safeArchivePath = archivePath.replace(/"/g, '\\"');
 
@@ -859,7 +936,7 @@ async function handleArchiveBrowsing(fullPath) {
       archivePath,
     );
 
-    let cmd = `7z l -slt -ba -sccUTF-8 "${safeArchivePath}"`;
+    cmd = `7z l -slt -ba -sccUTF-8 "${safeArchivePath}"`;
     if (isCompressedTar) {
       cmd = `7z x -so "${safeArchivePath}" | 7z l -slt -ba -sccUTF-8 -si -ttar`;
     }
@@ -923,6 +1000,7 @@ async function handleArchiveBrowsing(fullPath) {
 
     return { success: true, contents, path: fullPath, isArchive: true };
   } catch (err) {
+    logCommandFailure(cmd, err);
     return {
       success: false,
       error: "Failed to read archive (7z required): " + err.message,
@@ -1068,12 +1146,12 @@ async function getDiskSpace(pathStr) {
   const util = require("util");
   const execPromise = util.promisify(exec);
 
+  let cmd = "";
   try {
     if (process.platform === "win32") {
       const driveLetter = pathStr.substring(0, 2);
-      const { stdout } = await execPromise(
-        `wmic logicaldisk where "DeviceID='${driveLetter}'" get FreeSpace,Size /format:value`,
-      );
+      cmd = `wmic logicaldisk where "DeviceID='${driveLetter}'" get FreeSpace,Size /format:value`;
+      const { stdout } = await execPromise(cmd);
       const sizeMatch = stdout.match(/Size=(\d+)/);
       const freeMatch = stdout.match(/FreeSpace=(\d+)/);
       if (sizeMatch && freeMatch) {
@@ -1083,7 +1161,8 @@ async function getDiskSpace(pathStr) {
         };
       }
     } else {
-      const { stdout } = await execPromise(`df -kP "${pathStr}"`);
+      cmd = `df -kP "${pathStr}"`;
+      const { stdout } = await execPromise(cmd);
       const lines = stdout.trim().split("\n");
       if (lines.length >= 2) {
         const parts = lines[1].split(/\s+/);
@@ -1095,7 +1174,9 @@ async function getDiskSpace(pathStr) {
         }
       }
     }
-  } catch {}
+  } catch (error) {
+    logCommandFailure(cmd, error);
+  }
   return null;
 }
 
@@ -1118,10 +1199,9 @@ ipcMain.handle("get-drives", async () => {
 
     const drives = [];
 
+    let cmd = "lsblk -J -o NAME,SIZE,TYPE,MOUNTPOINT,LABEL,FSTYPE,RO 2>/dev/null";
     try {
-      const { stdout } = await execPromise(
-        "lsblk -J -o NAME,SIZE,TYPE,MOUNTPOINT,LABEL,FSTYPE,RO 2>/dev/null",
-      );
+      const { stdout } = await execPromise(cmd);
       const data = JSON.parse(stdout);
 
       const processDevice = (device, parentName = null) => {
@@ -1180,7 +1260,7 @@ ipcMain.handle("get-drives", async () => {
         }
       }
     } catch (err) {
-      console.error("lsblk failed, using fallback:", err.message);
+      logCommandFailure(cmd, err);
     }
 
     if (!drives.some((d) => d.path === "/")) {
@@ -1236,55 +1316,179 @@ ipcMain.handle("get-drives", async () => {
   }
 });
 
-ipcMain.handle("unmount-device", async (event, devicePath) => {
+ipcMain.handle("unmount-device", async (event, devicePath, options = {}) => {
   const { exec } = require("child_process");
   const util = require("util");
   const execPromise = util.promisify(exec);
 
+  const getErrorText = (err) =>
+    [err?.message, err?.stderr, err?.stdout].filter(Boolean).join("\n");
+
+  const needsAuth = (message) =>
+    /not authorized|authentication is required|permission denied|access denied/i.test(
+      String(message || ""),
+    );
+
+  const runWithSudo = (password) => {
+    const { spawn } = require("child_process");
+    return new Promise((resolve, reject) => {
+      const child = spawn(
+        "sudo",
+        ["-S", "-p", "", "udisksctl", "unmount", "-b", devicePath],
+        { stdio: ["pipe", "pipe", "pipe"] },
+      );
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (data) => {
+        stdout += data.toString();
+      });
+      child.stderr.on("data", (data) => {
+        stderr += data.toString();
+      });
+      child.on("error", reject);
+      child.on("close", (code) => {
+        const output = (stdout + stderr).trim();
+        if (code === 0) resolve(output);
+        else reject(new Error(output || `Unmount failed (${code})`));
+      });
+      if (password) {
+        child.stdin.write(`${password}\n`);
+      }
+      child.stdin.end();
+    });
+  };
+
+  if (options && typeof options.password === "string") {
+    try {
+      await runWithSudo(options.password);
+      return { success: true };
+    } catch (error) {
+      const detail = getErrorText(error);
+      logCommandFailure(`sudo udisksctl unmount -b ${devicePath}`, error);
+      return { success: false, error: detail || "Unmount failed" };
+    }
+  }
+
   try {
-    await execPromise(`udisksctl unmount -b ${devicePath} 2>&1`);
+    const cmd = `udisksctl unmount -b ${devicePath} --no-user-interaction 2>&1`;
+    await execPromise(cmd);
     return { success: true };
   } catch (error) {
+    const detail = getErrorText(error);
+    logCommandFailure(
+      `udisksctl unmount -b ${devicePath} --no-user-interaction`,
+      error,
+    );
+    if (needsAuth(detail)) {
+      return { success: false, needsAuth: true, error: detail };
+    }
     try {
-      await execPromise(`gio mount -u ${devicePath} 2>&1`);
+      const cmd = `gio mount -u ${devicePath} 2>&1`;
+      await execPromise(cmd);
       return { success: true };
     } catch (gioErr) {
+      logCommandFailure(`gio mount -u ${devicePath}`, gioErr);
       try {
-        await execPromise(`umount ${devicePath} 2>&1`);
+        const cmd = `umount ${devicePath} 2>&1`;
+        await execPromise(cmd);
         return { success: true };
       } catch (umountErr) {
+        logCommandFailure(`umount ${devicePath}`, umountErr);
         return { success: false, error: error.message || "Unmount failed" };
       }
     }
   }
 });
 
-ipcMain.handle("mount-device", async (event, devicePath) => {
+ipcMain.handle("mount-device", async (event, devicePath, options = {}) => {
   const { exec } = require("child_process");
   const util = require("util");
   const execPromise = util.promisify(exec);
 
-  try {
-    const { stdout } = await execPromise(
-      `udisksctl mount -b ${devicePath} 2>&1`,
+  const parseMountPoint = (output) => {
+    const match = String(output || "").match(/at (.+?)\.?\s*$/);
+    return match ? match[1].trim() : null;
+  };
+
+  const getErrorText = (err) =>
+    [err?.message, err?.stderr, err?.stdout].filter(Boolean).join("\n");
+
+  const needsAuth = (message) =>
+    /not authorized|authentication is required|permission denied|access denied/i.test(
+      String(message || ""),
     );
 
-    const match = stdout.match(/at (.+?)\.?\s*$/);
-    const mountpoint = match ? match[1].trim() : null;
+  const runWithSudo = (password) => {
+    const { spawn } = require("child_process");
+    return new Promise((resolve, reject) => {
+      const child = spawn(
+        "sudo",
+        ["-S", "-p", "", "udisksctl", "mount", "-b", devicePath],
+        { stdio: ["pipe", "pipe", "pipe"] },
+      );
+      let stdout = "";
+      let stderr = "";
+      child.stdout.on("data", (data) => {
+        stdout += data.toString();
+      });
+      child.stderr.on("data", (data) => {
+        stderr += data.toString();
+      });
+      child.on("error", reject);
+      child.on("close", (code) => {
+        const output = (stdout + stderr).trim();
+        if (code === 0) resolve(output);
+        else reject(new Error(output || `Mount failed (${code})`));
+      });
+      if (password) {
+        child.stdin.write(`${password}\n`);
+      }
+      child.stdin.end();
+    });
+  };
+
+  if (options && typeof options.password === "string") {
+    try {
+      const output = await runWithSudo(options.password);
+      const mountpoint = parseMountPoint(output);
+      return { success: true, mountpoint };
+    } catch (error) {
+      const detail = getErrorText(error);
+      logCommandFailure(`sudo udisksctl mount -b ${devicePath}`, error);
+      return { success: false, error: detail || "Mount failed" };
+    }
+  }
+
+  try {
+    const cmd = `udisksctl mount -b ${devicePath} --no-user-interaction 2>&1`;
+    const { stdout } = await execPromise(cmd);
+
+    const mountpoint = parseMountPoint(stdout);
     return { success: true, mountpoint };
   } catch (error) {
+    const detail = getErrorText(error);
+    logCommandFailure(
+      `udisksctl mount -b ${devicePath} --no-user-interaction`,
+      error,
+    );
+    const message = detail || error.message || "";
+    if (needsAuth(message)) {
+      return { success: false, needsAuth: true, error: message };
+    }
     try {
-      await execPromise(`gio mount -d ${devicePath} 2>&1`);
+      const cmd = `gio mount -d ${devicePath} 2>&1`;
+      await execPromise(cmd);
 
-      const { stdout: lsblkOut } = await execPromise(
-        `lsblk -n -o MOUNTPOINT ${devicePath} 2>/dev/null`,
-      );
+      const cmdLsblk = `lsblk -n -o MOUNTPOINT ${devicePath} 2>/dev/null`;
+      const { stdout: lsblkOut } = await execPromise(cmdLsblk);
       const mountpoint = lsblkOut.trim() || null;
       if (mountpoint) {
         return { success: true, mountpoint };
       }
-    } catch (gioErr) {}
-    return { success: false, error: error.message || "Mount failed" };
+    } catch (gioErr) {
+      logCommandFailure(`gio mount -d ${devicePath}`, gioErr);
+    }
+    return { success: false, error: message || "Mount failed" };
   }
 });
 
@@ -1391,9 +1595,8 @@ ipcMain.handle("get-video-metadata", async (event, filePath) => {
     const execPromise = util.promisify(exec);
 
     try {
-      const { stdout } = await execPromise(
-        `ffprobe -v quiet -print_format json -show_format -show_streams "${filePath}" 2>/dev/null`,
-      );
+      const cmd = `ffprobe -v quiet -print_format json -show_format -show_streams "${filePath}" 2>/dev/null`;
+      const { stdout } = await execPromise(cmd);
       const data = JSON.parse(stdout);
 
       const videoStream = data.streams?.find((s) => s.codec_type === "video");
@@ -1424,6 +1627,10 @@ ipcMain.handle("get-video-metadata", async (event, filePath) => {
         },
       };
     } catch (ffprobeError) {
+      logCommandFailure(
+        `ffprobe -v quiet -print_format json -show_format -show_streams "${filePath}"`,
+        ffprobeError,
+      );
       return {
         success: true,
         metadata: {
