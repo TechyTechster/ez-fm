@@ -51,23 +51,16 @@ Optional (App works fine without them but it is recomended):
 - `xdg-desktop-portal` + compositor portal (e.g. `xdg-desktop-portal-hyprland`) for portal picker
 - a terminal (`kitty`, `gnome-terminal`, `x-terminal-emulator`) for "Open in Terminal"
 
-### Run locally
+### Run
 
 ```bash
 git clone https://github.com/TechyTechster/ez-fm.git
 cd ez-fm
 
-npm install
-npm start
-```
-
-### Optional: system file picker integration
-
-```bash
 ./install.sh
+ez-fm
 ```
 
-After this, apps using XDG Desktop Portal (Firefox, Chromium, GTK/Qt apps, etc.) will use EZ File Manager for file dialogs.
 
 ## Usage
 
@@ -94,12 +87,12 @@ After this, apps using XDG Desktop Portal (Firefox, Chromium, GTK/Qt apps, etc.)
 
 ```bash
 # Open a directory
-npm start -- /path/to/folder
+ez-fm -- /path/to/folder
 
 # File picker modes
-npm start -- --picker --mode=open
-npm start -- --picker --mode=save --filename=document.txt
-npm start -- --picker --mode=directory
+ez-fm start -- --picker --mode=open
+ez-fm start -- --picker --mode=save --filename=document.txt
+ez-fm start -- --picker --mode=directory
 ```
 
 ## Configuration
@@ -127,7 +120,7 @@ ez-fm/
 ├── portal-service.js # XDG portal backend
 ├── index.html        # UI markup
 ├── styles.css        # Styling
-└── install.sh        # Portal installer
+└── install.sh        # Installer
 ```
 
 ## Contributing
