@@ -11,22 +11,22 @@
 
 :root {
     --bg-primary: rgba(30, 30, 40, 0);
-    --bg-overlay: rgba(100, 100, 100, 0);
     --bg-secondary: rgba(45, 45, 60, 0);
     --bg-tertiary: rgba(60, 60, 80, 0);
+    --bg-overlay: rgba(0, 0, 0, 0.5);
     --menu-bg: rgba(30, 30, 40, 0.6);
     --menu-overlay-bg: rgba(30, 30, 40, 0.7);
     --bg-hover: rgba(255, 255, 255, 0.25);
     --bg-active: rgba(100, 100, 100, 0.5);
-    --modal-backdrop: rgba(0, 0, 0, 0.35);
+    --modal-backdrop: rgba(0, 0, 0, 0.5);
     --text-primary: rgba(255, 255, 255, 0.95);
     --text-secondary: rgba(255, 255, 255, 0.7);
     --text-muted: rgba(255, 255, 255, 0.5);
     --border-color: rgba(255, 255, 255, 0.1);
     --accent-color: rgba(100, 100, 100, 0.5);
     --accent-hover: rgba(170, 170, 170, 0.95);
-    --danger-color: rgba(255, 100, 100, 0.8);
     --success-color: rgba(100, 255, 150, 0.8);
+    --danger-color: rgba(255, 100, 100, 0.8);
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     --blur-amount: 50px;
 }
@@ -341,11 +341,15 @@ body {
     flex-shrink: 0;
     width: 14px;
     height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .tab-icon svg {
     width: 14px;
     height: 14px;
+    display: block;
 }
 
 .tab-title {
@@ -813,6 +817,11 @@ body {
     background: var(--bg-overlay);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+}
+
+.group-header.group-header-hidden {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .group-header:first-child {
@@ -1523,6 +1532,230 @@ body {
 .settings-menu::-webkit-scrollbar-thumb {
     background: var(--bg-hover);
     border-radius: 3px;
+}
+
+/* ============================================================================
+   Theme Customizer
+   ============================================================================ */
+
+.theme-modal {
+    position: fixed;
+    inset: 0;
+    background: var(--modal-backdrop);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 7000;
+}
+
+.theme-modal.visible {
+    display: flex;
+}
+
+.theme-modal-panel {
+    width: min(920px, 92vw);
+    max-height: 86vh;
+    background: var(--bg-overlay);
+    border: 1px solid var(--border-color);
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount));
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.theme-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.theme-modal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.theme-modal-close {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-modal-close:hover {
+    background: var(--bg-hover);
+}
+
+.theme-modal-body {
+    padding: 16px 20px;
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.theme-section {
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    border-radius: 12px;
+    padding: 12px;
+}
+
+.theme-section-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.theme-row {
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr) 260px;
+    gap: 12px;
+    align-items: center;
+    padding: 8px 6px;
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.theme-row:last-child {
+    border-bottom: none;
+}
+
+.theme-label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.theme-name {
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.theme-hint {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.theme-controls {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+.theme-controls.theme-inline-actions {
+    justify-content: flex-start;
+    flex-wrap: wrap;
+}
+
+.theme-select {
+    min-width: 240px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 12px;
+}
+
+.theme-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.theme-color-input {
+    width: 36px;
+    height: 32px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    background: var(--bg-secondary);
+    padding: 2px;
+    cursor: pointer;
+}
+
+.theme-opacity {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 150px;
+}
+
+.theme-alpha-input {
+    flex: 1;
+}
+
+.theme-alpha-value {
+    font-size: 12px;
+    color: var(--text-secondary);
+    min-width: 36px;
+    text-align: right;
+}
+
+.theme-modal-footer {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-top: 1px solid var(--border-color);
+    background: var(--bg-secondary);
+}
+
+.theme-footer-spacer {
+    flex: 1;
+}
+
+.theme-btn {
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 13px;
+}
+
+.theme-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.theme-btn.primary {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+}
+
+.theme-btn:hover {
+    background: var(--bg-hover);
+}
+
+.theme-btn.primary:hover {
+    background: var(--accent-hover);
+}
+
+@media (max-width: 720px) {
+    .theme-row {
+        grid-template-columns: 1fr;
+    }
+
+    .theme-controls {
+        justify-content: space-between;
+    }
 }
 
 /* ============================================================================
