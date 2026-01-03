@@ -1,4 +1,3 @@
-
 let currentPath = "";
 let history = [];
 let historyIndex = -1;
@@ -1001,7 +1000,6 @@ function initPickerMode(mode, multiple, defaultFilename) {
   }
 }
 
-
 async function activateTab(index) {
   if (index < 0 || index >= tabs.length) return;
 
@@ -1286,8 +1284,7 @@ function setupToggleButtons() {
       toggleHiddenBtn.classList.toggle("active", showHidden);
       try {
         localStorage.setItem("showHidden", String(showHidden));
-      } catch {
-      }
+      } catch {}
       renderFiles();
       updateStatusBar();
     });
@@ -1302,8 +1299,7 @@ function setupToggleButtons() {
       togglePreviewBtn.classList.toggle("active", showPreviewPane);
       try {
         localStorage.setItem("showPreviewPane", String(showPreviewPane));
-      } catch {
-      }
+      } catch {}
       updatePreviewPanelVisibility();
     });
   }
@@ -1380,7 +1376,8 @@ function setupContextMenuHandlers() {
     contextPinTargetLabel = null;
 
     const candidate = e.target.closest(".file-item");
-    const fileItem = candidate && fileList.contains(candidate) ? candidate : null;
+    const fileItem =
+      candidate && fileList.contains(candidate) ? candidate : null;
 
     if (fileItem) {
       contextMenuMode = "item";
@@ -1484,9 +1481,7 @@ function setupFileListHandlers() {
     }
 
     if (e.dataTransfer.files.length > 0) {
-      const externalPaths = Array.from(e.dataTransfer.files).map(
-        (f) => f.path,
-      );
+      const externalPaths = Array.from(e.dataTransfer.files).map((f) => f.path);
       await handleFileDrop(externalPaths, currentPath, true);
     }
   });
@@ -1719,8 +1714,7 @@ function setupQuickAccess() {
             addPin(itemPath, label);
             pinCount++;
           }
-        } catch (err) {
-        }
+        } catch (err) {}
       }
     }
 
@@ -1802,8 +1796,7 @@ function saveQuickAccessItems() {
       QUICK_ACCESS_STORAGE_KEY,
       JSON.stringify(quickAccessItems),
     );
-  } catch {
-  }
+  } catch {}
 }
 
 function resolveQuickAccessPath(item) {
@@ -2293,9 +2286,9 @@ function showDriveContextMenu(e, drive) {
       label: "Mount",
       icon: ICON_MOUNT,
       onClick: async () => {
-          await mountDrive(drive);
-        },
-      });
+        await mountDrive(drive);
+      },
+    });
   }
 
   renderMenuItems(contextMenuPanel, items);
@@ -2417,8 +2410,7 @@ async function navigateTo(path) {
           }
           items.push(info);
         }
-      } catch (e) {
-      }
+      } catch (e) {}
     }
 
     currentItems = items;
@@ -2504,7 +2496,6 @@ function finishNavigation() {
   updateStatusBar();
 }
 
-
 function applyViewSettings(path) {
   const key = normalizePathForCompare(path);
   const defaultColumns = { size: true, modified: true, added: true };
@@ -2570,8 +2561,7 @@ function saveCurrentViewSettings() {
       "folderViewSettings",
       JSON.stringify(viewSettingsCache),
     );
-  } catch {
-  }
+  } catch {}
 }
 
 let activeMenuType = null;
@@ -2918,15 +2908,6 @@ function renderSettingsMenu() {
       renderFiles();
     }),
   );
-
-  settingsMenu.appendChild(createSep());
-
-  settingsMenu.appendChild(createHeader("Navigation"));
-  settingsMenu.appendChild(
-    createOption("Open via System Dialog...", false, () => {
-      openLocationViaSystemPicker();
-    }),
-  );
 }
 
 function updateUI() {
@@ -3201,7 +3182,10 @@ function getItemTagsHtml(itemPath) {
   const itemTags = fileTags[itemPath] || [];
   if (itemTags.length === 0) return "";
   return `<span class="file-tags">${itemTags
-    .map((c) => `<span class="tag-dot" style="background-color:${TAG_HEX[c]}"></span>`)
+    .map(
+      (c) =>
+        `<span class="tag-dot" style="background-color:${TAG_HEX[c]}"></span>`,
+    )
     .join("")}</span>`;
 }
 
@@ -3212,7 +3196,14 @@ function getThumbnailProps(fileType) {
   return { iconContent: fileType.icon, shouldObserveThumbnail: false };
 }
 
-function buildItemHtml(item, fileType, folderSizeCell, tagsHtml, iconContent, shouldObserveThumbnail) {
+function buildItemHtml(
+  item,
+  fileType,
+  folderSizeCell,
+  tagsHtml,
+  iconContent,
+  shouldObserveThumbnail,
+) {
   return `
       <div class="file-icon" style="color: ${fileType.color}"${
         shouldObserveThumbnail
@@ -3834,7 +3825,6 @@ function hideContextMenu() {
   closeContextSubmenu();
 }
 
-
 function closeContextSubmenu() {
   contextSubmenuOpen = false;
   if (contextSubmenu) {
@@ -4248,8 +4238,7 @@ async function copySelected() {
 
   try {
     await window.fileManager.clipboardCopyPaths(clipboardItems);
-  } catch {
-  }
+  } catch {}
 
   showNotification(`Copied ${clipboardItems.length} item(s)`);
 }
@@ -4262,8 +4251,7 @@ async function cutSelected() {
 
   try {
     await window.fileManager.clipboardCopyPaths(clipboardItems);
-  } catch {
-  }
+  } catch {}
 
   showNotification(`Cut ${clipboardItems.length} item(s)`);
 }
@@ -4837,7 +4825,6 @@ function saveFolderSizeCache() {
   }, 2000);
 }
 
-
 function scheduleVisibleFolderSizes() {
   if (!fileList) return;
   if (!calculateFolderSizes) return;
@@ -4959,7 +4946,6 @@ function cssEscape(value) {
   return String(value).replace(/["\\]/g, "\\$&");
 }
 
-
 function updatePreviewPanelVisibility() {
   if (!previewPanel) return;
 
@@ -5043,8 +5029,7 @@ async function renderPreviewItem(item) {
           `;
           return;
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     }
 
     if (fileType === fileTypes.image) {
@@ -5059,8 +5044,7 @@ async function renderPreviewItem(item) {
         if (metadataResult.success) {
           imageMetadata = metadataResult.metadata;
         }
-      } catch (error) {
-      }
+      } catch (error) {}
 
       previewContent.innerHTML = `
         <img src="${escapeHtmlAttr(imageUrl)}" alt="${escapeHtmlAttr(item.name)}" class="preview-image" style="margin-bottom: 16px;" onerror="this.parentElement.innerHTML='<div class=\\'preview-error\\'>Failed to load image</div>'">
@@ -5138,8 +5122,7 @@ async function renderPreviewItem(item) {
         if (metadataResult.success) {
           videoMetadata = metadataResult.metadata;
         }
-      } catch (error) {
-      }
+      } catch (error) {}
 
       const formatDuration = (seconds) => {
         if (!seconds) return "—";
@@ -5345,8 +5328,7 @@ async function renderPreviewItem(item) {
           return;
         } else {
         }
-      } catch (error) {
-      }
+      } catch (error) {}
     }
 
     if (itemInfo) {
