@@ -11,22 +11,24 @@
 
 :root {
     --bg-primary: rgba(30, 30, 40, 0);
-    --bg-overlay: rgba(100, 100, 100, 0.5);
+    --bg-overlay: rgba(100, 100, 100, 0);
     --bg-secondary: rgba(45, 45, 60, 0);
     --bg-tertiary: rgba(60, 60, 80, 0);
-    --bg-hover: rgba(125, 125, 125, 0.5);
+    --menu-bg: rgba(30, 30, 40, 0.6);
+    --menu-overlay-bg: rgba(30, 30, 40, 0.7);
+    --bg-hover: rgba(255, 255, 255, 0.25);
     --bg-active: rgba(100, 100, 100, 0.5);
     --modal-backdrop: rgba(0, 0, 0, 0.35);
     --text-primary: rgba(255, 255, 255, 0.95);
     --text-secondary: rgba(255, 255, 255, 0.7);
     --text-muted: rgba(255, 255, 255, 0.5);
     --border-color: rgba(255, 255, 255, 0.1);
-    --accent-color: rgba(100, 100, 100, 0.9);
-    --accent-hover: rgba(120, 170, 255, 0.95);
+    --accent-color: rgba(100, 100, 100, 0.5);
+    --accent-hover: rgba(170, 170, 170, 0.95);
     --danger-color: rgba(255, 100, 100, 0.8);
     --success-color: rgba(100, 255, 150, 0.8);
     --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    --blur-amount: 20px;
+    --blur-amount: 50px;
 }
 
 body {
@@ -1331,9 +1333,9 @@ body {
 
 .context-menu {
     position: fixed;
-    background: var(--bg-primary);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: var(--menu-bg);
+    backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount));
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 8px 0;
@@ -1369,9 +1371,9 @@ body {
     top: 8px;
     left: calc(100% - 8px);
     min-width: 220px;
-    background: var(--bg-primary);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: var(--menu-bg);
+    backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount));
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 8px 0;
@@ -1455,9 +1457,9 @@ body {
 
 .view-menu {
     position: absolute;
-    background: var(--bg-overlay);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: var(--menu-overlay-bg);
+    backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount));
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 8px 0;
@@ -1483,9 +1485,9 @@ body {
 .settings-menu {
     position: absolute;
     width: clamp(200px, 25vw, 300px);
-    background: var(--bg-overlay);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
+    background: var(--menu-overlay-bg);
+    backdrop-filter: blur(var(--blur-amount));
+    -webkit-backdrop-filter: blur(var(--blur-amount));
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 8px 0;
@@ -1622,7 +1624,7 @@ body {
     bottom: 60px;
     right: 20px;
     padding: 12px 20px;
-    background: rgba(100, 150, 255, 0.95);
+    background: var(--accent-color);
     color: white;
     border-radius: 10px;
     font-size: 14px;
@@ -1635,11 +1637,6 @@ body {
 
 .notification.error {
     background: rgba(255, 100, 100, 0.95);
-}
-
-.notification.success {
-    background: rgba(100, 255, 150, 0.95);
-    color: #1a1a2e;
 }
 
 @keyframes slideIn {
@@ -1776,7 +1773,7 @@ body {
    Responsive — Tablet (900px)
    ============================================================================ */
 
-@media (max-width: 900px) {
+@media (max-width: 1050px) {
     .sidebar {
         width: 160px;
     }

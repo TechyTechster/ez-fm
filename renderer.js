@@ -182,6 +182,14 @@ function readLocalStorageJson(key, fallback) {
   }
 }
 
+function scheduleIdle(task, timeout = 800) {
+  if (typeof window.requestIdleCallback === "function") {
+    window.requestIdleCallback(task, { timeout });
+  } else {
+    setTimeout(task, 0);
+  }
+}
+
 function showTextInputModal(
   title,
   message,
@@ -777,9 +785,9 @@ function loadPickerSidebarData() {
 }
 
 async function bootstrapPicker() {
-  document.documentElement.classList.add("picker-ready");
   setPickerLoadingState();
   await navigateTo(currentPath);
+  document.documentElement.classList.add("picker-ready");
   loadPickerSidebarData();
 }
 
@@ -788,10 +796,15 @@ async function bootstrapFullApp() {
   hasRealTrashFolder = Boolean(commonDirs && commonDirs.trash);
   loadQuickAccessItems();
   renderPinnedItems();
-  await renderDisks();
   loadFullPreferences();
-  renderTagsSidebar();
   await navigateTo(currentPath);
+  scheduleIdle(() => {
+    renderDisks();
+  });
+  scheduleIdle(() => {
+    renderTagsSidebar();
+    syncTagsHighlight();
+  });
 }
 
 async function initializeTabs() {
@@ -1336,28 +1349,52 @@ function setupViewMenuButtons() {
 }
 
 function setupGlobalClickHandlers() {
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".context-menu")) {
+  const closeMenusForTarget = (target) => {
+    if (!target.closest(".context-menu")) {
       hideContextMenu();
     }
 
     if (viewMenu && viewMenu.style.display === "block") {
       if (
-        !viewMenu.contains(e.target) &&
-        e.target !== viewModeBtn &&
-        e.target !== sortBtn &&
-        e.target !== groupBtn
+        !viewMenu.contains(target) &&
+        target !== viewModeBtn &&
+        target !== sortBtn &&
+        target !== groupBtn
       ) {
         viewMenu.style.display = "none";
+        activeMenuType = null;
       }
     }
 
     if (settingsMenu && settingsMenu.style.display === "block") {
-      if (!settingsMenu.contains(e.target) && e.target !== settingsBtn) {
+      if (!settingsMenu.contains(target) && target !== settingsBtn) {
         settingsMenu.style.display = "none";
       }
     }
-  });
+  };
+
+  document.addEventListener(
+    "mousedown",
+    (e) => {
+      closeMenusForTarget(e.target);
+    },
+    true,
+  );
+
+  document.addEventListener(
+    "contextmenu",
+    (e) => {
+      closeMenusForTarget(e.target);
+    },
+    true,
+  );
+}
+
+function closeAllMenus() {
+  hideContextMenu();
+  if (viewMenu) viewMenu.style.display = "none";
+  if (settingsMenu) settingsMenu.style.display = "none";
+  activeMenuType = null;
 }
 
 function setupContextMenuHandlers() {
@@ -1499,6 +1536,7 @@ function setupEventListeners() {
   setupGlobalClickHandlers();
   setupContextMenuHandlers();
   setupFileListHandlers();
+  window.addEventListener("blur", closeAllMenus);
 
   setupQuickAccess();
 

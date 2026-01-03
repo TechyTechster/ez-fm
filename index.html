@@ -9,15 +9,7 @@
         />
         <title>EZ File Manager</title>
         <link rel="stylesheet" href="styles.css" />
-        <script>
-            // Detect picker mode early to prevent UI flash
-            (function () {
-                var params = new URLSearchParams(window.location.search);
-                if (params.get("picker") === "true") {
-                    document.documentElement.classList.add("picker-mode-early");
-                }
-            })();
-        </script>
+        <script src="picker-early.js"></script>
         <style>
             /* Hide everything until ready in picker mode */
             .picker-mode-early body {

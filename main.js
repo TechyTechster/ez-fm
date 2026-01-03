@@ -14,8 +14,9 @@ const path = require("path");
 const fs = require("fs").promises;
 const fsSync = require("fs");
 const sizeOf = require("image-size");
+const { fileURLToPath } = require("url");
 
-const isPicker = process.argv.includes("--picker");
+let isPicker = false;
 let isDev = false;
 
 app.name = "ez-fm";
@@ -32,19 +33,35 @@ function toFileUrl(p) {
   );
 }
 
+function getUserArgs() {
+  const appPath = app.getAppPath();
+  const exePath = app.getPath("exe");
+  return process.argv.filter((arg, idx) => {
+    if (idx === 0) return false;
+    if (arg === appPath || arg === exePath) return false;
+    return true;
+  });
+}
+
 function resolveStartPath(args) {
   let startPath = null;
 
-  for (let i = args.length - 1; i >= 1; i--) {
+  for (let i = args.length - 1; i >= 0; i--) {
     const arg = args[i];
     if (!arg.startsWith("-")) {
-      if (arg === "." && process.defaultApp) continue;
       startPath = arg;
       break;
     }
   }
 
   if (!startPath) return null;
+  if (startPath.startsWith("file://")) {
+    try {
+      startPath = fileURLToPath(startPath);
+    } catch {
+      return null;
+    }
+  }
   if (!path.isAbsolute(startPath)) {
     return path.resolve(process.cwd(), startPath);
   }
@@ -115,8 +132,20 @@ function createWindow() {
     },
   });
 
-  const pickerOptions = getPickerOptions(process.argv);
-  const startPath = resolveStartPath(process.argv);
+  const userArgs = getUserArgs();
+  isPicker = userArgs.includes("--picker");
+  const pickerOptions = getPickerOptions(userArgs);
+  let startPath = resolveStartPath(userArgs);
+  const appPath = app.getAppPath();
+  const exePath = app.getPath("exe");
+  if (
+    startPath &&
+    (startPath === appPath ||
+      startPath === exePath ||
+      path.resolve(startPath) === path.resolve(appPath))
+  ) {
+    startPath = null;
+  }
   const query = buildWindowQuery(startPath, pickerOptions);
 
   mainWindow.loadFile("index.html", { query });

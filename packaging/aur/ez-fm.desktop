@@ -4,6 +4,7 @@ Comment=A modern file manager with transparent glassmorphism UI
 Exec=ez-fm %U
 Icon=ez-fm
 Type=Application
+MimeType=inode/directory;application/x-directory;
 Categories=Utility;FileManager;
 StartupWMClass=ez-fm
 Terminal=false
