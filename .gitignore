@@ -1,0 +1,52 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+out/
+build/
+
+# Electron build artifacts
+*.app
+*.dmg
+*.exe
+*.AppImage
+*.snap
+*.deb
+*.rpm
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE / Editor
+.idea/
+.vscode/
+*.sublime-*
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# AI assistant artifacts
+.aider*
+.claude/
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+
+# Unrelated scripts (personal)
+hypr_brightness*.sh
+nigga.*

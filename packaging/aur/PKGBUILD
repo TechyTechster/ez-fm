@@ -1,0 +1,43 @@
+pkgname=ez-fm-git
+pkgver=r12.05b5d3c
+pkgrel=1
+pkgdesc="A modern transparent file manager with XDG portal integration"
+arch=('x86_64')
+url="https://github.com/TechyTechster/ez-fm"
+license=('MIT')
+depends=('electron')
+makedepends=('git' 'nodejs' 'npm')
+provides=('ez-fm')
+conflicts=('ez-fm')
+source=(
+  "git+https://github.com/TechyTechster/ez-fm.git"
+  "ez-fm.desktop"
+  "ez-fm.sh"
+)
+sha256sums=(
+  'SKIP'
+  'SKIP'
+  'SKIP'
+)
+
+pkgver() {
+  cd "$srcdir/ez-fm"
+  printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+prepare() {
+  cd "$srcdir/ez-fm"
+  npm install --omit=dev
+}
+
+package() {
+  cd "$srcdir/ez-fm"
+  install -d "$pkgdir/usr/share/ez-fm"
+  cp -a . "$pkgdir/usr/share/ez-fm"
+  rm -rf "$pkgdir/usr/share/ez-fm/.git"
+  rm -rf "$pkgdir/usr/share/ez-fm/packaging"
+  install -Dm755 "$srcdir/ez-fm.sh" "$pkgdir/usr/bin/ez-fm"
+  install -Dm644 "$srcdir/ez-fm.desktop" "$pkgdir/usr/share/applications/ez-fm.desktop"
+  install -Dm644 "$srcdir/ez-fm/icon.png" "$pkgdir/usr/share/pixmaps/ez-fm.png"
+  install -Dm644 "$srcdir/ez-fm/LICENSE" "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}
