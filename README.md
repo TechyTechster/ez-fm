@@ -9,7 +9,9 @@ Built mainly because I wanted a modern-looking file picker that actually behaves
 
 
 
-![Screenshot](icon.png)
+![Logo](icon.png)
+![FileManager](file-manager.png)
+![FilePicker](file-picker.png)
 
 ## What it does
 
